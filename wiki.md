@@ -1,6 +1,6 @@
 ---
 title: Dot.Memory — Platform Wiki
-version: 0.1.0
+version: 0.2.0
 status: draft
 owners: [Memory Platform Lead]
 platform-id: dot-memory
@@ -19,7 +19,13 @@ Purpose: this is Dot.Memory's own knowledge home — owned and maintained by the
 
 Dot.Memory is the persistence substrate for the Dot Ecosystem: knowledge-graph storage, vector indexes for semantic retrieval, Knowledge Pack archives, and the audit trails that every other platform's governance gates write to. It is infrastructure, not a knowledge consumer — Dot.Memory stores content without reading it.
 
-**Status:** early-stage. This repository does not yet contain application code; this wiki is the architecture blueprint the implementation will follow. Treat every section below as the current design intent, not shipped behavior, until the change log says otherwise.
+**Status:** early-stage, now with a first hand-authored code pass. This repository contains a
+Jetstream Teams application shell plus the domain models, migrations, dashboard, and seeder
+described in §3–§5 below — but it is **unverified**: it was written in an environment without
+PHP, Composer, or PostgreSQL, so nothing here has actually been installed, migrated, or run. Treat
+every section below as the current design intent that the code *attempts* to follow, not proven
+shipped behavior, until a real `composer install && php artisan migrate && php artisan test` pass
+confirms it and the change log is updated accordingly.
 
 ## 2. Design Principle: Store Without Reading
 
@@ -93,8 +99,13 @@ We subscribe to Dot.Brain recommendations on index strategy, tier-policy tuning,
 
 ## 9. Roadmap
 
-- [ ] Stand up the graph store and vector index (hot tier)
-- [ ] Implement the four retrieval SLA classes with degraded-mode behavior
+- [x] Scaffold the Jetstream Teams application shell (auth, profile, 2FA, API tokens, ecosystem SSO) — **unverified, not yet run**
+- [x] Model storage tiers, indexes, retrieval classes, retrieval observations, and durability outcomes as Eloquent models + migrations — **unverified, not yet migrated**
+- [x] Build a first SLA-attainment / index-inventory / durability-outcomes monitoring dashboard — **unverified, not yet rendered**
+- [x] Seed realistic example telemetry matching the four SLA classes' targets — **unverified, not yet seeded**
+- [ ] Actually install, migrate, and test the above against a real PHP/Postgres environment
+- [ ] Stand up the real graph store and vector index (hot tier) — the current app only tracks index *metadata*, not a real index
+- [ ] Wire the four retrieval SLA classes to real degraded-mode behavior (the schema models the contract; nothing yet measures live traffic against it)
 - [ ] Publish the first `observation` Knowledge Pack (hello-pack per Dot.Brain's onboarding procedure)
 - [ ] Warm/cold tiering automation
 - [ ] Crypto-shredding implementation for legal erasure
@@ -104,6 +115,7 @@ We subscribe to Dot.Brain recommendations on index strategy, tier-policy tuning,
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1.0 | 2026-08-01 | Memory Platform Lead | Initial wiki: architecture blueprint derived from Dot.Brain's platforms/dot-memory.md and brain.memory.md, adapted to platform-owned framing |
+| 0.2.0 | 2026-08-01 | Claude Sonnet 5 (AI, hand-authored scaffolding pass) | First code pass: Jetstream Teams shell copied from Dot.Billing's verified boilerplate; domain models/migrations for StorageTier, Index, RetrievalClass, RetrievalObservation, DurabilityOutcome; SLA/index/durability monitoring dashboard; seeder with example telemetry matching §5's targets; structural test asserting no model can hold tenant content. **Entirely unverified** — written without PHP/Composer/PostgreSQL access, so nothing has been installed, migrated, or run. Roadmap items above marked done reflect code written, not code proven working. |
 
 ## Open Questions
 

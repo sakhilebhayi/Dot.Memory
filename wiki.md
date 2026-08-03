@@ -1,6 +1,6 @@
 ---
 title: Dot.Memory — Platform Wiki
-version: 0.3.0
+version: 0.4.0
 status: draft
 owners: [Memory Platform Lead]
 platform-id: dot-memory
@@ -114,6 +114,7 @@ We subscribe to Dot.Brain recommendations on index strategy, tier-policy tuning,
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| 0.4.0 | 2026-08-03 | Sakhile Bhayi | Redesigned `resources/views/welcome.blade.php`'s marketing surface: it had shipped as the untouched default Laravel/Jetstream scaffold page (no nav, no hero, no brand mark — just the "Let's get started" documentation card), so this pass builds a full custom marketing page from scratch — nav + hero + features + storage-tiers table + CTA + footer — matching the structural pattern already piloted on `mines`' `welcome.blade.php`. Nav and footer brand marks use the real `public/images/logo.png`. Hero background is a real, licensed Unsplash photo of a server rack (photo by Kevin Ache, @kevinache, unsplash.com/photos/a-rack-of-servers-in-a-server-room-2JJ3wBHu4_0), hotlinked via Unsplash's CDN with a dark gradient overlay tuned for WCAG-adequate text contrast, photographer credited inline as an HTML comment. Copy is drawn only from this wiki's real §1/§3/§5 content (storage tiers, retrieval SLA contracts, forgetting policy) — no fabricated stats or testimonials. The CDN image URL was verified with `curl -sI` before use (HTTP/2 200). |
 | 0.1.0 | 2026-08-01 | Memory Platform Lead | Initial wiki: architecture blueprint derived from Dot.Brain's platforms/dot-memory.md and brain.memory.md, adapted to platform-owned framing |
 | 0.3.0 | 2026-08-02 | Sakhile Bhayi | **Executed for real, for the first time** — and it did not boot: `storage/framework/{cache,sessions,testing,views}`, `storage/app/{public,private}`, and `bootstrap/cache/.gitignore` were entirely absent from this repo (unlike the platform it was copied from), so nothing had ever created them and `realpath(storage_path('framework/views'))` returned `false`, crashing Laravel's Blade compiler on the very first `composer install`. Fixed by adding the missing directories with their standard `.gitignore` placeholders, matching Dot.Plug's real structure. After the fix: `composer install`, `migrate` (10 migrations, clean), and the full test suite all ran clean — 14 tests, 14 passed, 0 failed, including the "store without reading" invariant tests, now genuinely verified rather than "verified directly against the schema" by review alone. |
 | 0.2.0 | 2026-08-01 | Claude Sonnet 5 (AI, hand-authored scaffolding pass) | First code pass: Jetstream Teams shell copied from Dot.Billing's verified boilerplate; domain models/migrations for StorageTier, Index, RetrievalClass, RetrievalObservation, DurabilityOutcome; SLA/index/durability monitoring dashboard; seeder with example telemetry matching §5's targets; structural test asserting no model can hold tenant content. **Entirely unverified** — written without PHP/Composer/PostgreSQL access, so nothing has been installed, migrated, or run. Roadmap items above marked done reflect code written, not code proven working. |

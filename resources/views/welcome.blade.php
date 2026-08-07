@@ -123,7 +123,11 @@
 
         <!-- Hero -->
         <section class="relative min-h-[100dvh] flex items-end overflow-hidden">
-            <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 15% 0%, rgba(242,167,11,0.10) 0%, transparent 60%), var(--ink);"></div>
+            <!-- Photo: close-up of server cooling fans in a vibrant data center, by Fikri Rasyid,
+            unsplash.com/photos/close-up-of-server-cooling-fans-in-a-vibrant-data-center-iZe21DzHnUg -->
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1782094673136-5198a372980c?q=80&w=2400&auto=format&fit=crop');"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(100deg, var(--ink) 0%, var(--ink) 32%, rgba(18,20,26,0.6) 55%, rgba(18,20,26,0.35) 75%, rgba(18,20,26,0.18) 100%);"></div>
+            <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 15% 0%, rgba(242,167,11,0.10) 0%, transparent 60%);"></div>
 
             <!-- Signature element: line-art memory card + graph nodes — echoes the logo's own SD-card icon and the "knowledge graph" it stores -->
             <svg class="hidden lg:block absolute right-[4%] bottom-[6%] h-[70%] w-auto opacity-[0.16] pointer-events-none" viewBox="0 0 260 320" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

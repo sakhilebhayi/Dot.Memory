@@ -19,7 +19,9 @@ class Index extends Model
     protected $table = 'indexes';
 
     public const TYPE_GRAPH = 'graph';
+
     public const TYPE_VECTOR = 'vector';
+
     public const TYPE_AUDIT_LOG = 'audit-log';
 
     protected $fillable = [

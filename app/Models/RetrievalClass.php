@@ -19,8 +19,11 @@ class RetrievalClass extends Model
     use HasFactory;
 
     public const AGENT_CONTEXT = 'retr:agent-context:hot';
+
     public const SURFACE = 'retr:surface:hot';
+
     public const AUDIT = 'retr:audit:warm';
+
     public const ARCHIVE = 'retr:archive:cold';
 
     protected $fillable = [

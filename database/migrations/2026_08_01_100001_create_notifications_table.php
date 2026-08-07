@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Schema;
  * the "store without reading" schema invariant enforced on the models
  * in the 2026_08_01_100002 migration.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {

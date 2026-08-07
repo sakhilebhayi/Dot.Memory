@@ -17,10 +17,13 @@ class DurabilityOutcome extends Model
     use HasFactory;
 
     public const CHECK_RESTORE_TEST = 'restore_test';
+
     public const CHECK_INTEGRITY = 'integrity_check';
 
     public const RESULT_PASS = 'pass';
+
     public const RESULT_FAIL = 'fail';
+
     public const RESULT_DEGRADED = 'degraded';
 
     protected $fillable = [

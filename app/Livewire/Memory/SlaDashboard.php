@@ -4,6 +4,7 @@ namespace App\Livewire\Memory;
 
 use App\Models\RetrievalClass;
 use App\Models\RetrievalObservation;
+use App\Models\RetrievalSlaEscalation;
 use App\Services\RetrievalSlaEvaluator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -37,12 +38,26 @@ class SlaDashboard extends Component
 
     public string $observationP99 = '';
 
+    public ?int $acknowledgingEscalationId = null;
+
+    public string $resolutionDetail = '';
+
     #[Computed]
     public function classes(): Collection
     {
         return RetrievalClass::with(['storageTier', 'observations' => function ($query) {
             $query->orderByDesc('window_end')->limit(8);
         }])->orderBy('class_key')->get();
+    }
+
+    #[Computed]
+    public function openEscalations(): Collection
+    {
+        return RetrievalSlaEscalation::query()
+            ->where('status', 'open')
+            ->with('retrievalClass')
+            ->latest('detected_at')
+            ->get();
     }
 
     public function canGovern(): bool
@@ -114,6 +129,44 @@ class SlaDashboard extends Component
         $this->recordingClassId = null;
 
         unset($this->classes);
+    }
+
+    public function startAcknowledging(int $escalationId): void
+    {
+        abort_unless($this->canGovern(), 403);
+
+        RetrievalSlaEscalation::findOrFail($escalationId);
+
+        $this->acknowledgingEscalationId = $escalationId;
+        $this->resolutionDetail = '';
+    }
+
+    public function cancelAcknowledging(): void
+    {
+        $this->acknowledgingEscalationId = null;
+    }
+
+    public function confirmAcknowledge(): void
+    {
+        abort_unless($this->canGovern(), 403);
+
+        $this->validate([
+            'resolutionDetail' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $escalation = RetrievalSlaEscalation::findOrFail($this->acknowledgingEscalationId);
+
+        $escalation->update([
+            'status' => 'acknowledged',
+            'acknowledged_by' => auth()->id(),
+            'resolution_detail' => $this->resolutionDetail,
+            'acknowledged_at' => now(),
+        ]);
+
+        $this->acknowledgingEscalationId = null;
+        $this->resolutionDetail = '';
+
+        unset($this->openEscalations);
     }
 
     public function render()

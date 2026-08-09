@@ -1,4 +1,33 @@
 <div class="dot-card" style="padding:1.5rem;">
+    @if ($this->canGovern() && $this->openEscalations->isNotEmpty())
+        <div style="border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:1rem;margin-bottom:1.25rem;">
+            <h4 style="font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#f4f4f5;margin:0 0 0.75rem;">Escalations</h4>
+            @foreach ($this->openEscalations as $escalation)
+                <div style="padding:0.6rem 0;border-top:1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+                        <div>
+                            <span style="color:#f4f4f5;font-weight:600;font-size:0.82rem;">{{ $escalation->retrievalClass->class_key }}</span>
+                            <span style="color:#71717a;font-size:0.72rem;margin-left:0.5rem;">{{ $escalation->breach_action }}</span>
+                        </div>
+                        <button wire:click="startAcknowledging({{ $escalation->id }})" class="dot-btn dot-btn-ghost" style="font-size:10.5px;padding:5px 9px;">
+                            Acknowledge
+                        </button>
+                    </div>
+                    @if ($acknowledgingEscalationId === $escalation->id)
+                        <div style="margin-top:0.5rem;">
+                            <textarea wire:model="resolutionDetail" class="dot-input" rows="2" placeholder="What did you do about it? (required)"></textarea>
+                            @error('resolutionDetail') <div style="color:#ef4444;font-size:10px;margin-top:4px;">{{ $message }}</div> @enderror
+                            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                                <button wire:click="confirmAcknowledge" class="dot-btn dot-btn-primary" style="font-size:10.5px;padding:5px 9px;">Confirm acknowledge</button>
+                                <button wire:click="cancelAcknowledging" class="dot-btn dot-btn-ghost" style="font-size:10.5px;padding:5px 9px;">Cancel</button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     <h3 style="font-family:'Syne',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Retrieval SLA Attainment</h3>
     <div wire:loading.delay class="dot-loading-overlay">
         <span class="material-symbols-rounded dot-spin" style="font-size:22px;color:#818cf8;">progress_activity</span>

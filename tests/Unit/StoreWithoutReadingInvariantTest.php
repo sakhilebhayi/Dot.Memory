@@ -6,6 +6,7 @@ use App\Models\DurabilityOutcome;
 use App\Models\Index;
 use App\Models\RetrievalClass;
 use App\Models\RetrievalObservation;
+use App\Models\RetrievalSlaEscalation;
 use App\Models\StorageTier;
 use Tests\TestCase;
 
@@ -65,6 +66,11 @@ class StoreWithoutReadingInvariantTest extends TestCase
     public function test_index_has_no_content_holding_field(): void
     {
         $this->assertModelFieldsAreTelemetryOnly(new Index);
+    }
+
+    public function test_retrieval_sla_escalation_has_no_content_holding_field(): void
+    {
+        $this->assertModelFieldsAreTelemetryOnly(new RetrievalSlaEscalation);
     }
 
     private function assertModelFieldsAreTelemetryOnly(object $model): void

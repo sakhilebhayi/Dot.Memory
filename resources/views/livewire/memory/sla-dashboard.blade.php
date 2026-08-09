@@ -37,6 +37,39 @@
                 </div>
 
                 <div style="font-size:10px;color:#52525b;margin-top:0.5rem;">On breach: {{ $class->breach_action }}</div>
+
+                @if ($this->canGovern())
+                    <button wire:click="startRecordingObservation({{ $class->id }})" class="dot-btn dot-btn-ghost" style="font-size:10.5px;padding:5px 9px;margin-top:0.75rem;">
+                        Record observation
+                    </button>
+                @endif
+
+                @if ($recordingClassId === $class->id)
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.06);">
+                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+                            <input type="datetime-local" wire:model="observationWindowStart" class="dot-input" style="font-size:11px;">
+                            <input type="datetime-local" wire:model="observationWindowEnd" class="dot-input" style="font-size:11px;">
+                        </div>
+                        @error('observationWindowStart') <div style="color:#ef4444;font-size:10px;">{{ $message }}</div> @enderror
+                        @error('observationWindowEnd') <div style="color:#ef4444;font-size:10px;">{{ $message }}</div> @enderror
+                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+                            <input type="number" wire:model="observationRequestCount" placeholder="Requests" class="dot-input" style="width:90px;font-size:11px;">
+                            <input type="number" wire:model="observationFailureCount" placeholder="Failures" class="dot-input" style="width:90px;font-size:11px;">
+                        </div>
+                        @error('observationRequestCount') <div style="color:#ef4444;font-size:10px;">{{ $message }}</div> @enderror
+                        @error('observationFailureCount') <div style="color:#ef4444;font-size:10px;">{{ $message }}</div> @enderror
+                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+                            <input type="number" wire:model="observationP50" placeholder="p50 ms" class="dot-input" style="width:80px;font-size:11px;">
+                            <input type="number" wire:model="observationP95" placeholder="p95 ms" class="dot-input" style="width:80px;font-size:11px;">
+                            <input type="number" wire:model="observationP99" placeholder="p99 ms" class="dot-input" style="width:80px;font-size:11px;">
+                        </div>
+                        @error('observationP95') <div style="color:#ef4444;font-size:10px;">{{ $message }}</div> @enderror
+                        <div style="display:flex;gap:0.5rem;">
+                            <button wire:click="saveObservation" class="dot-btn dot-btn-primary" style="font-size:10.5px;padding:5px 9px;">Save</button>
+                            <button wire:click="cancelRecordingObservation" class="dot-btn dot-btn-ghost" style="font-size:10.5px;padding:5px 9px;">Cancel</button>
+                        </div>
+                    </div>
+                @endif
             </div>
         @empty
             <p style="font-size:0.8rem;color:#52525b;">No retrieval classes configured yet.</p>

@@ -1,0 +1,51 @@
+name: Server Inspect
+
+# Read-only reconnaissance for the first deployment: where did cPanel put
+# the memory.infodot.co.za docroot, which PHP CLI should artisan use, and
+# how is the mines site laid out (so Dot.Memory mirrors it). Prints facts
+# only; changes nothing.
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    name: Inspect hosting account layout
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Inspect
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              'bash -s' <<'INSPECT'
+          set -uo pipefail
+          echo "== home entries (top level)"
+          ls -1 "$HOME" | head -40
+          echo "== docroot candidates for the memory subdomain"
+          ls -1d "$HOME"/memory* "$HOME"/public_html/memory* 2>/dev/null || echo "none found"
+          echo "== mines layout (top level of its docroot + repo dir)"
+          ls -1d "$HOME"/mines* 2>/dev/null
+          for d in "$HOME"/mines*; do
+            [ -d "$d" ] && echo "-- $d:" && ls -1 "$d" | head -20
+          done
+          echo "== default php"
+          php -v 2>/dev/null | head -1 || echo "no php on PATH"
+          echo "== alt php binaries"
+          ls -1 /opt/alt/*/usr/bin/php /opt/cpanel/ea-php*/root/usr/bin/php 2>/dev/null | head -10 || true
+          echo "== composer"
+          command -v composer && composer --version 2>/dev/null | head -1 || ls "$HOME"/composer.phar 2>/dev/null || echo "no composer found"
+          echo "== server github access (public key fingerprints only)"
+          ls -1 "$HOME"/.ssh/*.pub 2>/dev/null || echo "no pub keys"
+          echo "== mines git remote (proves how the server pulls from GitHub)"
+          for d in "$HOME"/mines*/mines "$HOME"/mines*; do
+            [ -d "$d/.git" ] && git -C "$d" remote -v | head -2 && break
+          done
+          INSPECT

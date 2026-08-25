@@ -1,0 +1,77 @@
+name: Provision Guardian Service Token
+
+# Creates (or rotates) the Dot Guardian's Sanctum access token WITHOUT the
+# plaintext ever existing server-side or in logs: the caller generates the
+# random token locally, and passes only its sha256 here. Sanctum stores
+# exactly that hash, so inserting it directly yields a working token whose
+# plaintext only the caller holds. The printed TOKEN_ID is combined
+# locally into the bearer value "<id>|<plaintext>".
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "provision" to confirm creating the guardian service token'
+        required: true
+      token_hash:
+        description: 'sha256 hex of the locally generated token plaintext'
+        required: true
+
+jobs:
+  provision:
+    name: Create guardian service token
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Refuse unconfirmed runs
+        if: ${{ github.event.inputs.confirm != 'provision' }}
+        run: |
+          echo '::error::Confirmation input was not "provision" -- aborting.'
+          exit 1
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Provision
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}" \
+              TOKEN_HASH="${{ github.event.inputs.token_hash }}" \
+              'bash -s' <<'PROVISION'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          PHP=php
+
+          if ! printf '%s' "$TOKEN_HASH" | grep -Eq '^[0-9a-f]{64}$'; then
+            echo "token_hash must be 64 lowercase hex characters" >&2
+            exit 1
+          fi
+
+          mkdir -p "$HOME/tmp"
+          cat > "$HOME/tmp/guardian-token.php" <<'PHPEOF'
+          <?php
+          $hash = getenv('TOKEN_HASH');
+          $user = \App\Models\User::firstOrCreate(
+              ['email' => 'guardian@dot-brain.service'],
+              [
+                  'name' => 'Dot Guardian',
+                  'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(64)),
+              ],
+          );
+          $user->tokens()->where('name', 'dot-guardian')->delete();
+          $token = $user->tokens()->create([
+              'name' => 'dot-guardian',
+              'token' => $hash,
+              'abilities' => ['*'],
+          ]);
+          echo 'TOKEN_ID='.$token->id.PHP_EOL;
+          PHPEOF
+
+          $PHP artisan tinker --execute 'require getenv("HOME")."/tmp/guardian-token.php";'
+          rm -f "$HOME/tmp/guardian-token.php"
+          PROVISION

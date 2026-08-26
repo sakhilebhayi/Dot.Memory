@@ -27,7 +27,52 @@
         })();
     </script>
     <style>
-        :root { --accent: #818cf8; --accent-rgb: 129,140,248; }
+        /* --- Design tokens --------------------------------------------
+           One source of truth for the dashboard's visual language. Before
+           this, ~270 inline style attributes across nine views each
+           repeated their own hex values, so "change the muted grey" meant
+           nine edits and a drift. Components below consume these; pages
+           should not reach past them for raw colour. */
+        :root {
+            --accent: #818cf8;
+            --accent-rgb: 129,140,248;
+            --accent-quiet: rgba(129,140,248,0.12);
+
+            /* Ground and surfaces */
+            --bg: #09090b;
+            --surface: #141416;
+            --surface-raised: #18181b;
+            --line: rgba(255,255,255,0.07);
+            --line-strong: rgba(255,255,255,0.11);
+
+            /* Text, in descending emphasis. Every step is deliberate:
+               the ladder is what carries hierarchy without extra colour. */
+            --text: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --text-quiet: #71717a;
+            --text-faint: #52525b;
+            --text-ghost: #3f3f46;
+
+            /* Meaning. Never used alone -- every status pairs a colour with
+               an icon and a word, so nothing depends on seeing hue. */
+            --ok: #22c55e;
+            --warn: #fbbf24;
+            --bad: #f87171;
+            --info: #818cf8;
+
+            /* Rhythm */
+            --r-sm: 6px; --r: 8px; --r-lg: 12px; --r-pill: 99px;
+            --gap-xs: 0.4rem; --gap-sm: 0.75rem; --gap: 1.25rem; --gap-lg: 2rem;
+
+            /* Type scale */
+            --t-display: 1.5rem;
+            --t-title: 1.05rem;
+            --t-section: 0.95rem;
+            --t-body: 0.85rem;
+            --t-sm: 0.78rem;
+            --t-xs: 0.72rem;
+            --t-micro: 0.66rem;
+        }
         *, *::before, *::after { box-sizing: border-box; }
         body { margin:0; background:#09090b; color:#f4f4f5; font-family:'IBM Plex Sans',system-ui,sans-serif; font-size:14px; line-height:1.5; }
         .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; line-height:1; user-select:none; }
@@ -55,6 +100,11 @@
         .user-avatar { width:28px; height:28px; border-radius:50%; background:rgba(129,140,248,0.18); border:1px solid rgba(129,140,248,0.28); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#818cf8; flex-shrink:0; font-family:'Space Grotesk',sans-serif; }
         .user-name { font-size:12px; font-weight:600; color:#d4d4d8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .user-team { font-size:10px; color:#52525b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .user-row__text { min-width:0; flex:1; }
+        .user-signout { background:none; border:0; color:var(--text-faint); cursor:pointer; display:flex; padding:4px; border-radius:var(--r-sm); }
+        .user-signout:hover { color:var(--text); background:rgba(255,255,255,0.06); }
+        .user-signout .material-symbols-rounded { font-size:17px; }
+
         .topbar { position:fixed; top:0; left:260px; right:0; height:54px; background:rgba(9,9,11,0.85); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; padding:0 22px; z-index:30; gap:12px; }
         .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:#f4f4f5; flex:1; }
         .topbar-team { font-size:11px; color:#52525b; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:3px 8px; font-weight:500; white-space:nowrap; }
@@ -134,8 +184,176 @@
         /* Long content (tables, code) must scroll inside its own box
            rather than pushing the page sideways. */
         .dot-scroll-x { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-        .dot-card { background:#141416; border:1px solid rgba(255,255,255,0.07); border-radius:12px; }
-        .dot-card:hover { border-color:rgba(255,255,255,0.11); }
+        /* --- Components ----------------------------------------------
+           Everything the dashboard is built from. Pages compose these and
+           do not restyle them; that is what stops nine views drifting into
+           nine slightly different products. */
+        .dot-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); }
+        .dot-card--link { display:block; text-decoration:none; color:inherit; transition:border-color .14s ease, background .14s ease; }
+        .dot-card--link:hover { border-color:var(--line-strong); background:var(--surface-raised); }
+        .dot-card__head { display:flex; align-items:center; justify-content:space-between; gap:var(--gap-sm); margin-bottom:0.9rem; }
+        .dot-card__title { font-family:'Space Grotesk',sans-serif; font-size:var(--t-section); font-weight:600; color:var(--text); margin:0; }
+        .dot-card__action a, .dot-card__action button { font-size:var(--t-xs); color:var(--accent); text-decoration:none; background:none; border:0; cursor:pointer; }
+
+        .dot-page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--gap); margin-bottom:var(--gap); flex-wrap:wrap; }
+        .dot-page-head__title { font-family:'Space Grotesk',sans-serif; font-size:var(--t-display); font-weight:700; color:var(--text); margin:0 0 0.2rem; letter-spacing:-0.01em; }
+        .dot-page-head__lede { font-size:var(--t-sm); color:var(--text-faint); margin:0; max-width:60ch; line-height:1.6; }
+
+        .dot-stat { padding:1.25rem 1.5rem; }
+        .dot-stat__label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-faint); margin-bottom:0.7rem; }
+        .dot-stat__value { font-size:2rem; font-weight:600; line-height:1.1; color:var(--text); }
+        .dot-stat__value--accent { color:var(--accent); }
+        .dot-stat__value--ok { color:var(--ok); }
+        .dot-stat__value--warn { color:var(--warn); }
+        .dot-stat__value--bad { color:var(--bad); }
+        .dot-stat__context { font-size:var(--t-xs); color:var(--text-quiet); margin-top:0.35rem; line-height:1.5; }
+
+        .dot-status { display:inline-flex; align-items:center; gap:0.25rem; font-size:var(--t-micro); font-weight:600; padding:0.15rem 0.5rem; border-radius:var(--r-pill); background:rgba(255,255,255,0.06); color:var(--text-muted); white-space:nowrap; }
+        .dot-status__icon { font-size:13px; }
+        .dot-status--ok { background:rgba(34,197,94,0.12); color:var(--ok); }
+        .dot-status--warn { background:rgba(251,191,36,0.12); color:var(--warn); }
+        .dot-status--bad { background:rgba(248,113,113,0.12); color:var(--bad); }
+        .dot-status--info { background:var(--accent-quiet); color:var(--accent); }
+
+        .dot-empty { padding:3rem 2.5rem; text-align:center; }
+        .dot-empty__icon { font-size:34px; color:var(--accent); margin-bottom:0.8rem; display:inline-block; }
+        .dot-empty__title { font-family:'Space Grotesk',sans-serif; font-size:var(--t-title); color:var(--text); margin:0 0 0.5rem; }
+        .dot-empty__body { font-size:var(--t-body); color:var(--text-quiet); max-width:34rem; margin:0 auto; line-height:1.6; }
+        .dot-empty__action { margin-top:1.2rem; }
+        .dot-empty__action a { font-size:var(--t-sm); color:var(--accent); text-decoration:none; }
+
+        /* Page furniture ---------------------------------------------- */
+        .dot-pad { padding:1.5rem; }
+        .dot-stack { display:flex; flex-direction:column; gap:var(--gap); }
+        .dot-grid.dot-stack { display:grid; }
+        .dot-note { font-size:var(--t-sm); color:var(--text-quiet); line-height:1.6; margin:0.2rem 0 0; }
+        .dot-note--faint { font-size:var(--t-xs); color:var(--text-faint); margin-top:0.7rem; }
+
+        /* The attention banner: one sentence answering "does anything need
+           me?", ahead of any metric. */
+        .dot-attention { display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; padding:1.25rem 1.5rem; margin-bottom:var(--gap); }
+        .dot-attention__icon { font-size:22px; margin-top:0.1rem; }
+        .dot-attention__text { flex:1 1 16rem; min-width:0; }
+        .dot-attention__headline { font-size:1rem; font-weight:600; color:var(--text); margin:0 0 0.2rem; }
+        .dot-attention__detail { font-size:var(--t-body); color:var(--text-muted); margin:0; line-height:1.6; }
+        .dot-attention__link { font-size:var(--t-sm); font-weight:600; text-decoration:none; white-space:nowrap; margin-left:auto; }
+        .dot-attention--ok .dot-attention__icon, .dot-attention--ok .dot-attention__link { color:var(--ok); }
+        .dot-attention--warn .dot-attention__icon, .dot-attention--warn .dot-attention__link { color:var(--warn); }
+        .dot-attention--bad .dot-attention__icon, .dot-attention--bad .dot-attention__link { color:var(--bad); }
+        .dot-attention--info .dot-attention__icon, .dot-attention--info .dot-attention__link { color:var(--accent); }
+
+        /* Lists of knowledge: rows that are whole links, so keyboard and
+           middle-click behave the way people expect. */
+        .dot-list { list-style:none; margin:0 -1.5rem -1.5rem; padding:0; }
+        .dot-list__row { display:block; padding:0.9rem 1.5rem; border-top:1px solid rgba(255,255,255,0.05); text-decoration:none; transition:background .12s ease; }
+        .dot-list__row:hover { background:rgba(255,255,255,0.03); }
+        .dot-list__title { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; font-size:var(--t-body); font-weight:600; color:var(--text); margin-bottom:0.25rem; }
+        .dot-list__body { display:block; font-size:var(--t-sm); color:var(--text-quiet); line-height:1.55; }
+        .dot-list__meta { display:block; font-size:var(--t-xs); color:var(--text-faint); margin-top:0.35rem; }
+
+        .dot-links { list-style:none; margin:0; padding:0; }
+        .dot-links a { display:flex; align-items:center; gap:0.55rem; padding:0.45rem 0; font-size:var(--t-body); color:var(--text-muted); text-decoration:none; }
+        .dot-links a:hover { color:var(--text); }
+        .dot-links .material-symbols-rounded { font-size:17px; color:var(--text-faint); }
+
+        .dot-entry { padding:1.1rem 1.4rem; margin-bottom:var(--gap-sm); }
+
+        /* Filter bar: labelled controls, consistent field styling. */
+        .dot-filters { display:flex; gap:var(--gap-sm); flex-wrap:wrap; align-items:center; padding:0.9rem 1rem; margin-bottom:var(--gap); }
+        .dot-field { position:relative; }
+        .dot-field--grow { flex:1; min-width:14rem; }
+        .dot-input, .dot-select { width:100%; background:var(--bg); border:1px solid rgba(255,255,255,0.09); border-radius:var(--r); padding:0.55rem 0.8rem; font-size:var(--t-body); color:var(--text); font-family:inherit; }
+        .dot-select { color:var(--text-muted); font-size:var(--t-sm); }
+        .dot-input:hover, .dot-select:hover { border-color:var(--line-strong); }
+        .dot-field__hint { position:absolute; right:0.7rem; top:50%; transform:translateY(-50%); font-size:var(--t-xs); color:var(--accent); }
+        .dot-result-count { font-size:var(--t-xs); color:var(--text-faint); margin:0 0 var(--gap-sm); }
+
+        /* Detail page ------------------------------------------------- */
+        .dot-back { display:inline-flex; align-items:center; gap:0.35rem; font-size:var(--t-xs); color:var(--text-quiet); text-decoration:none; margin-bottom:0.8rem; }
+        .dot-back:hover { color:var(--text-muted); }
+        .dot-back .material-symbols-rounded { font-size:15px; }
+        .dot-lede-label { font-family:'Space Grotesk',sans-serif; font-size:var(--t-section); font-weight:600; color:var(--accent); margin:0 0 0.5rem; }
+        .dot-prose { font-size:var(--t-body); color:var(--text-muted); line-height:1.65; margin:0; }
+        .dot-trust { font-size:var(--t-body); font-weight:600; color:var(--accent); margin:0 0 0.35rem; }
+        .dot-timeline { list-style:none; margin:0; padding:0; }
+        .dot-timeline li { display:flex; gap:0.8rem; padding:0.45rem 0; border-top:1px solid rgba(255,255,255,0.05); }
+        .dot-timeline time { font-size:var(--t-xs); color:var(--text-faint); white-space:nowrap; }
+        .dot-timeline span { font-size:var(--t-sm); color:var(--text-muted); }
+        .dot-related { display:flex; align-items:center; justify-content:space-between; gap:var(--gap-sm); padding:0.55rem 0; border-top:1px solid rgba(255,255,255,0.05); font-size:var(--t-sm); color:var(--text-muted); text-decoration:none; }
+        .dot-related:hover { color:var(--text); }
+        .dot-disclosure { display:flex; align-items:center; gap:0.5rem; width:100%; padding:0; background:none; border:0; cursor:pointer; text-align:left; font-family:inherit; font-size:var(--t-body); font-weight:600; color:var(--text-quiet); }
+        .dot-disclosure:hover { color:var(--text-muted); }
+        .dot-disclosure .material-symbols-rounded { font-size:16px; color:var(--text-faint); transition:transform .14s ease; }
+        .dot-disclosure[aria-expanded="true"] .material-symbols-rounded { transform:rotate(180deg); }
+        .dot-disclosure__hint { font-size:var(--t-micro); font-weight:400; color:var(--text-ghost); }
+        .dot-code { background:var(--bg); border:1px solid var(--line); border-radius:var(--r); padding:1rem; font-family:'IBM Plex Mono',monospace; font-size:var(--t-xs); color:var(--text-muted); line-height:1.6; margin:1rem 0 0; }
+
+        /* Timeline & insights ----------------------------------------- */
+        .dot-day { margin-bottom:1.75rem; }
+        .dot-day__label { font-size:var(--t-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-faint); margin:0 0 0.6rem; }
+        .dot-day__card { padding:0.4rem 0; }
+        .dot-events { list-style:none; margin:0; padding:0; }
+        .dot-event { display:flex; align-items:flex-start; gap:0.9rem; padding:0.7rem 1.3rem; }
+        .dot-event + .dot-event { border-top:1px solid rgba(255,255,255,0.05); }
+        .dot-event__icon { font-size:17px; color:var(--accent); margin-top:0.05rem; }
+        .dot-event__text { flex:1; font-size:var(--t-body); color:var(--text-muted); line-height:1.5; }
+        .dot-event__text a { color:var(--text-muted); text-decoration:none; }
+        .dot-event__text a:hover { color:var(--text); }
+        .dot-event__time { font-size:var(--t-xs); color:var(--text-ghost); white-space:nowrap; }
+
+        .dot-lede-label--spaced { margin-top:1.4rem; }
+        .dot-btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.5rem 0.9rem; border-radius:var(--r); background:var(--accent-quiet); border:1px solid rgba(129,140,248,0.28); color:var(--accent); font-size:var(--t-sm); font-weight:600; text-decoration:none; cursor:pointer; font-family:inherit; }
+        .dot-btn:hover { background:rgba(129,140,248,0.18); }
+        .dot-insight { width:100%; text-align:left; background:none; border:0; border-top:1px solid rgba(255,255,255,0.05); cursor:pointer; font-family:inherit; }
+        .dot-insight { display:block; padding:0.7rem 0; border-top:1px solid rgba(255,255,255,0.05); text-decoration:none; }
+        .dot-insight__title { display:block; font-size:var(--t-body); font-weight:600; color:var(--text); margin-bottom:0.25rem; }
+        .dot-insight__title--warn { color:var(--warn); }
+        .dot-insight__meta { display:block; font-size:var(--t-sm); color:var(--text-quiet); }
+        .dot-insight__verdict { color:var(--accent); }
+        .dot-chips { display:flex; flex-wrap:wrap; gap:var(--gap-xs); margin:0.4rem 0 1.1rem; }
+
+        /* Tables: one set of rules, so the Reliability pages read as the
+           same product as the Knowledge pages. */
+        .dot-card__title--spaced { margin-bottom:1.25rem; font-size:0.875rem; font-weight:700; }
+        .dot-spinner-icon { font-size:22px; color:var(--accent); }
+
+        .dot-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        .dot-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .dot-table thead tr { text-align:left; color:var(--text-quiet); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; }
+        .dot-table th, .dot-table td { padding:8px 10px; }
+        .dot-table tbody tr { border-top:1px solid var(--line); }
+        .dot-table tbody tr:hover { background:rgba(255,255,255,0.02); }
+        .dot-table__num { font-family:'IBM Plex Mono',monospace; color:var(--text-muted); }
+
+        /* Modal ------------------------------------------------------- */
+        .dot-modal { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:1rem; background:rgba(0,0,0,0.6); backdrop-filter:blur(2px); }
+        .dot-modal__panel { width:100%; max-height:85vh; overflow-y:auto; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-lg); animation:dot-modal-in .14s ease-out; }
+        @keyframes dot-modal-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+        .dot-modal__head { display:flex; align-items:center; justify-content:space-between; gap:var(--gap-sm); padding:1.1rem 1.4rem; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--surface); }
+        .dot-modal__title { font-family:'Space Grotesk',sans-serif; font-size:var(--t-title); font-weight:600; color:var(--text); margin:0; }
+        .dot-modal__close { background:none; border:0; color:var(--text-quiet); cursor:pointer; display:flex; padding:0.2rem; border-radius:var(--r-sm); }
+        .dot-modal__close:hover { color:var(--text); background:rgba(255,255,255,0.06); }
+        .dot-modal__body { padding:1.4rem; }
+        .dot-modal__foot { padding:1rem 1.4rem; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:var(--gap-sm); }
+
+        /* Toasts ------------------------------------------------------ */
+        .dot-toasts { position:fixed; right:1rem; bottom:1rem; z-index:70; display:flex; flex-direction:column; gap:0.5rem; width:min(24rem, calc(100vw - 2rem)); }
+        .dot-toast { display:flex; align-items:flex-start; gap:0.6rem; padding:0.8rem 0.9rem; border-radius:var(--r); background:var(--surface-raised); border:1px solid var(--line-strong); box-shadow:0 8px 24px rgba(0,0,0,0.4); animation:dot-toast-in .16s ease-out; }
+        @keyframes dot-toast-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+        .dot-toast__icon { font-size:18px; flex-shrink:0; margin-top:0.05rem; }
+        .dot-toast__text { flex:1; min-width:0; font-size:var(--t-sm); color:var(--text-muted); line-height:1.5; }
+        .dot-toast__title { display:block; color:var(--text); font-weight:600; margin-bottom:0.1rem; }
+        .dot-toast__close { background:none; border:0; color:var(--text-ghost); cursor:pointer; display:flex; padding:0; }
+        .dot-toast__close:hover { color:var(--text-muted); }
+        .dot-toast__close .material-symbols-rounded { font-size:16px; }
+        .dot-toast--success .dot-toast__icon { color:var(--ok); }
+        .dot-toast--error .dot-toast__icon { color:var(--bad); }
+        .dot-toast--warning .dot-toast__icon { color:var(--warn); }
+        .dot-toast--info .dot-toast__icon { color:var(--info); }
+
+        @media (max-width: 560px) {
+            .dot-toasts { right:0.5rem; left:0.5rem; bottom:0.5rem; width:auto; }
+        }
         .metric-val { font-family:'IBM Plex Mono',monospace; font-weight:500; letter-spacing:-0.02em; }
         .dot-input { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; color:#f4f4f5; font-family:'Inter',sans-serif; font-size:13px; padding:8px 12px; width:100%; transition:border-color .15s,box-shadow .15s; outline:none; }
         .dot-input:focus { border-color:rgba(129,140,248,0.45); box-shadow:0 0 0 3px rgba(129,140,248,0.07); }
@@ -153,7 +371,10 @@
         @keyframes dot-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
     </style>
     @livewireStyles
-    <script defer src="https://unpkg.com/alpinejs@3.10.2/dist/cdn.min.js"></script>
+    {{-- Alpine comes from Livewire, which bundles it. Loading it from a CDN
+         as well ran TWO Alpine instances: components initialised twice and
+         $wire went undefined, which is why the notification bell had been
+         throwing "$wire is not defined" on every page. --}}
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -218,11 +439,20 @@
         @auth
         <div class="sidebar-footer">
             <div class="user-row">
-                <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
-                <div style="min-width:0;flex:1;">
+                <div class="user-avatar" aria-hidden="true">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                <div class="user-row__text">
                     <div class="user-name">{{ Auth::user()->name }}</div>
                     <div class="user-team">{{ Auth::user()->currentTeam->name ?? 'Personal' }}</div>
                 </div>
+                {{-- Sign out lived only in Jetstream's nav bar, which was a
+                     whole second navigation competing with this sidebar for
+                     the same destinations. Moving it here let that bar go. --}}
+                <form method="POST" action="{{ route('logout') }}" x-data>
+                    @csrf
+                    <button type="submit" class="user-signout" title="Sign out" aria-label="Sign out">
+                        <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+                    </button>
+                </form>
             </div>
         </div>
         @endauth
@@ -263,11 +493,13 @@
         </a>
     </header>
 
-    @livewire('navigation-menu')
-
     <div class="content-wrap">
         <main id="main-content" tabindex="-1">{{ $slot }}</main>
     </div>
+
+    {{-- One toast host for the whole app, outside the scrolling content so
+         a notification is never clipped by an overflow container. --}}
+    <x-dot.toasts />
 
     @stack('modals')
     @livewireScripts

@@ -1,19 +1,19 @@
-<div class="dot-card" style="padding:1.5rem;">
-    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Durability Outcomes</h3>
+<div class="dot-card dot-pad">
+    <h3 class="dot-card__title dot-card__title--spaced">Durability Outcomes</h3>
     <div wire:loading.delay class="dot-loading-overlay">
-        <span class="material-symbols-rounded dot-spin" style="font-size:22px;color:#818cf8;">progress_activity</span>
+        <span class="material-symbols-rounded dot-spin" class="dot-spinner-icon">progress_activity</span>
     </div>
-    <div wire:loading.remove.delay style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <div wire:loading.remove.delay class="dot-table-wrap">
+        <table class="dot-table">
             <thead>
-                <tr style="text-align:left;color:#71717a;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;">
-                    <th style="padding:8px 10px;">Tier</th>
-                    <th style="padding:8px 10px;">Check</th>
-                    <th style="padding:8px 10px;">Period</th>
-                    <th style="padding:8px 10px;">Checked</th>
-                    <th style="padding:8px 10px;">Integrity</th>
-                    <th style="padding:8px 10px;">Result</th>
-                    <th style="padding:8px 10px;">Verified</th>
+                <tr>
+                    <th>Tier</th>
+                    <th>Check</th>
+                    <th>Period</th>
+                    <th>Checked</th>
+                    <th>Integrity</th>
+                    <th>Result</th>
+                    <th>Verified</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,17 +26,17 @@
                         };
                     @endphp
                     <tr style="border-top:1px solid rgba(255,255,255,0.06);">
-                        <td style="padding:8px 10px;color:#f4f4f5;">{{ $outcome->storageTier->name ?? '—' }}</td>
-                        <td style="padding:8px 10px;color:#a1a1aa;">{{ str_replace('_', ' ', $outcome->check_type) }}</td>
-                        <td style="padding:8px 10px;color:#71717a;font-size:12px;">
+                        <td style="color:#f4f4f5;">{{ $outcome->storageTier->name ?? '—' }}</td>
+                        <td style="color:#a1a1aa;">{{ str_replace('_', ' ', $outcome->check_type) }}</td>
+                        <td style="color:#71717a;font-size:12px;">
                             {{ $outcome->audit_period_start->format('M d') }} – {{ $outcome->audit_period_end->format('M d, Y') }}
                         </td>
                         <td style="padding:8px 10px;" class="metric-val">{{ number_format($outcome->items_passed) }}/{{ number_format($outcome->items_checked) }}</td>
                         <td style="padding:8px 10px;" class="metric-val">{{ $outcome->integrity_score !== null ? number_format($outcome->integrity_score * 100, 2) . '%' : '—' }}</td>
-                        <td style="padding:8px 10px;">
+                        <td>
                             <span class="dot-badge" style="background:{{ $color }}1f;color:{{ $color }};">{{ ucfirst($outcome->result) }}</span>
                         </td>
-                        <td style="padding:8px 10px;color:#71717a;">{{ $outcome->verified_at->diffForHumans() }}</td>
+                        <td style="color:#71717a;">{{ $outcome->verified_at->diffForHumans() }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="7" style="padding:1.5rem 10px;color:#52525b;text-align:center;">No durability outcomes recorded yet.</td></tr>

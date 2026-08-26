@@ -1,109 +1,108 @@
-<div>
-    @php
-        $tone = $this->attention['tone'];
-        $accent = match ($tone) {
-            'urgent' => '#f87171',
-            'warning' => '#fbbf24',
-            'watching' => '#818cf8',
-            default => '#22c55e',
-        };
-        $glyph = match ($tone) {
-            'urgent' => 'priority_high',
-            'warning' => 'schedule',
-            'watching' => 'visibility',
-            'quiet' => 'psychology',
-            default => 'check_circle',
-        };
-    @endphp
+@php
+    $a = $this->attention;
+    $tone = match ($a['tone']) {
+        'urgent' => 'bad',
+        'warning' => 'warn',
+        'watching' => 'info',
+        default => 'ok',
+    };
+    $glyph = match ($a['tone']) {
+        'urgent' => 'priority_high',
+        'warning' => 'schedule',
+        'watching' => 'visibility',
+        'quiet' => 'psychology',
+        default => 'check_circle',
+    };
+@endphp
 
-    <div style="margin-bottom:1.5rem;">
-        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;letter-spacing:-0.01em;">What the ecosystem knows</h1>
-        <p style="font-size:0.78rem;color:#52525b;margin:0;">Every problem the Dot platforms have lived through, what fixed it, and what it taught us.</p>
-    </div>
+<div>
+    <x-dot.page
+        title="What the ecosystem knows"
+        lede="Every problem the Dot platforms have lived through, what fixed it, and what it taught us."
+    />
 
     {{-- The page's first answer is a sentence, not a number: does anything
-         need you right now? Status is carried by icon + wording as well as
-         colour, so it survives a colour-blind reader and a mono screen. --}}
-    <div class="dot-card" style="padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
-        <span class="material-symbols-rounded" aria-hidden="true" style="font-size:22px;color:{{ $accent }};margin-top:0.1rem;">{{ $glyph }}</span>
-        <div style="flex:1 1 16rem;min-width:0;">
-            <div style="font-size:1rem;font-weight:600;color:#f4f4f5;margin-bottom:0.2rem;">{{ $this->attention['headline'] }}</div>
-            <p style="font-size:0.8rem;color:#a1a1aa;margin:0;line-height:1.6;">{{ $this->attention['detail'] }}</p>
+         need you right now? Icon and wording carry it as well as colour. --}}
+    <x-dot.card class="dot-attention dot-attention--{{ $tone }}">
+        <span class="material-symbols-rounded dot-attention__icon" aria-hidden="true">{{ $glyph }}</span>
+        <div class="dot-attention__text">
+            <p class="dot-attention__headline">{{ $a['headline'] }}</p>
+            <p class="dot-attention__detail">{{ $a['detail'] }}</p>
         </div>
-        @if ($this->attention['link'] !== null)
-            <a href="{{ $this->attention['link']['url'] }}" style="font-size:0.78rem;font-weight:600;color:{{ $accent }};text-decoration:none;white-space:nowrap;margin-left:auto;">{{ $this->attention['link']['label'] }} &rarr;</a>
+        @if ($a['link'] !== null)
+            <a class="dot-attention__link" href="{{ $a['link']['url'] }}">{{ $a['link']['label'] }} &rarr;</a>
         @endif
-    </div>
+    </x-dot.card>
 
     @if ($this->figures['total'] === 0)
-        <div class="dot-card" style="padding:3rem 2.5rem;text-align:center;">
-            <span class="material-symbols-rounded" style="font-size:34px;color:var(--accent);margin-bottom:0.8rem;display:inline-block;">psychology</span>
-            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.05rem;color:#f4f4f5;margin:0 0 0.5rem;">Your knowledge base is still growing</h2>
-            <p style="font-size:0.82rem;color:#71717a;max-width:32rem;margin:0 auto 1.2rem;line-height:1.6;">
-                As the Dot ecosystem runs, its guardian records every production problem, every fix, and every lesson here —
-                so the next time something goes wrong, the answer is already waiting.
-            </p>
-            <a href="{{ route('reliability.index') }}" style="font-size:0.8rem;color:var(--accent);text-decoration:none;">See what is being watched right now →</a>
-        </div>
+        <x-dot.empty title="Your knowledge base is still growing">
+            As the Dot platforms run, their guardian records every production problem, every fix and every
+            lesson here &mdash; so the next time something goes wrong, the answer is already waiting.
+            <x-slot:action>
+                <a href="{{ route('reliability.index') }}">See what is being watched right now &rarr;</a>
+            </x-slot:action>
+        </x-dot.empty>
     @else
-        <div class="dot-grid dot-grid--metrics" style="margin-bottom:2rem;">
-            <div class="dot-card" style="padding:1.25rem 1.5rem;">
-                <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Experiences recorded</div>
-                <div style="font-size:2rem;font-weight:600;color:var(--accent);">{{ $this->figures['total'] }}</div>
-            </div>
-            <div class="dot-card" style="padding:1.25rem 1.5rem;">
-                <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Problems fixed</div>
-                <div style="font-size:2rem;font-weight:600;color:#22c55e;">{{ $this->figures['fixed'] }}</div>
-            </div>
-            <div class="dot-card" style="padding:1.25rem 1.5rem;">
-                <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Being watched now</div>
-                <div style="font-size:2rem;font-weight:600;color:{{ $this->figures['watching'] > 0 ? '#fbbf24' : '#f4f4f5' }};">{{ $this->figures['watching'] }}</div>
-            </div>
-            <div class="dot-card" style="padding:1.25rem 1.5rem;">
-                <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Platforms covered</div>
-                <div style="font-size:2rem;font-weight:600;color:#f4f4f5;">{{ $this->figures['platforms'] }}</div>
-            </div>
+        <div class="dot-grid dot-grid--metrics dot-stack">
+            <x-dot.stat label="Experiences recorded" :value="$this->figures['total']" tone="accent" />
+            <x-dot.stat label="Problems fixed" :value="$this->figures['fixed']" tone="ok" />
+            <x-dot.stat
+                label="Being watched now"
+                :value="$this->figures['watching']"
+                :tone="$this->figures['watching'] > 0 ? 'warn' : 'neutral'"
+            />
+            <x-dot.stat label="Platforms covered" :value="$this->figures['platforms']" />
         </div>
 
         <div class="dot-grid dot-grid--split">
-            <div class="dot-card" style="padding:1.5rem;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-                    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0;">Recently learned</h2>
-                    <a href="{{ route('knowledge.index') }}" style="font-size:0.75rem;color:var(--accent);text-decoration:none;">Browse all knowledge →</a>
-                </div>
+            <x-dot.card class="dot-pad" title="Recently learned">
+                <x-slot:action>
+                    <a href="{{ route('knowledge.index') }}">Browse all knowledge &rarr;</a>
+                </x-slot:action>
 
-                @foreach ($this->recentKnowledge as $entry)
-                    <a href="{{ route('knowledge.show', $entry['incident']->incident_uid) }}"
-                       style="display:block;padding:0.9rem 1rem;margin:0 -1rem;border-top:1px solid rgba(255,255,255,0.05);text-decoration:none;">
-                        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.3rem;">
-                            <span style="font-size:0.86rem;font-weight:600;color:#f4f4f5;">{{ $entry['human']['headline'] }}</span>
-                            <span style="font-size:0.66rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:99px;background:rgba(129,140,248,0.12);color:var(--accent);">{{ $entry['human']['status_label'] }}</span>
-                        </div>
-                        <div style="font-size:0.76rem;color:#71717a;line-height:1.5;">{{ $entry['human']['what_was_learned'] }}</div>
-                    </a>
-                @endforeach
-            </div>
+                <ul class="dot-list">
+                    @foreach ($this->recentKnowledge as $entry)
+                        <li>
+                            <a class="dot-list__row" href="{{ route('knowledge.show', $entry['incident']->incident_uid) }}">
+                                <span class="dot-list__title">
+                                    {{ $entry['human']['headline'] }}
+                                    <x-dot.status
+                                        :label="$entry['human']['status_label']"
+                                        :tone="$entry['human']['status_label'] === 'Fixed' ? 'ok' : 'info'"
+                                    />
+                                </span>
+                                <span class="dot-list__body">{{ $entry['human']['what_was_learned'] }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-dot.card>
 
-            <div style="display:flex;flex-direction:column;gap:1.25rem;">
-                <div class="dot-card" style="padding:1.5rem;">
-                    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">How this memory is used</h2>
-                    <div style="font-size:2rem;font-weight:600;color:var(--accent);margin-bottom:0.2rem;">{{ $this->brainUsage['lookups_week'] }}</div>
-                    <div style="font-size:0.76rem;color:#71717a;line-height:1.5;margin-bottom:0.8rem;">
+            <div class="dot-stack">
+                <x-dot.card class="dot-pad" title="How this memory is used">
+                    <div class="dot-stat__value dot-stat__value--accent">{{ $this->brainUsage['lookups_week'] }}</div>
+                    <p class="dot-note">
                         times this week Dot.Brain consulted this archive before deciding how to respond to a live problem.
-                    </div>
-                    @if ($this->brainUsage['last_lookup'] !== null)
-                        <div style="font-size:0.72rem;color:#52525b;">Last consulted {{ \Illuminate\Support\Carbon::parse($this->brainUsage['last_lookup'])->diffForHumans() }}</div>
-                    @else
-                        <div style="font-size:0.72rem;color:#52525b;">Not consulted yet — the first live problem will change that.</div>
-                    @endif
-                </div>
+                    </p>
+                    <p class="dot-note dot-note--faint">
+                        @if ($this->brainUsage['last_lookup'] !== null)
+                            Last consulted {{ \Illuminate\Support\Carbon::parse($this->brainUsage['last_lookup'])->diffForHumans() }}
+                        @else
+                            Not consulted yet &mdash; the first live problem will change that.
+                        @endif
+                    </p>
+                </x-dot.card>
 
-                <div class="dot-card" style="padding:1.5rem;">
-                    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.7rem;">Explore</h2>
-                    <a href="{{ route('knowledge.timeline') }}" style="display:block;font-size:0.8rem;color:#d4d4d8;text-decoration:none;padding:0.45rem 0;">📅 How knowledge has grown over time</a>
-                    <a href="{{ route('knowledge.insights') }}" style="display:block;font-size:0.8rem;color:#d4d4d8;text-decoration:none;padding:0.45rem 0;">💡 Recurring problems &amp; gaps</a>
-                    <a href="{{ route('reliability.index') }}" style="display:block;font-size:0.8rem;color:#d4d4d8;text-decoration:none;padding:0.45rem 0;">🔧 Storage reliability (technical)</a>
-                </div>
+                <x-dot.card class="dot-pad" title="Explore">
+                    <ul class="dot-links">
+                        <li><a href="{{ route('knowledge.timeline') }}">
+                            <span class="material-symbols-rounded" aria-hidden="true">timeline</span>How knowledge has grown</a></li>
+                        <li><a href="{{ route('knowledge.insights') }}">
+                            <span class="material-symbols-rounded" aria-hidden="true">lightbulb</span>Recurring problems &amp; gaps</a></li>
+                        <li><a href="{{ route('reliability.index') }}">
+                            <span class="material-symbols-rounded" aria-hidden="true">speed</span>Storage reliability</a></li>
+                    </ul>
+                </x-dot.card>
             </div>
         </div>
     @endif

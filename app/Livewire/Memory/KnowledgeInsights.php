@@ -71,6 +71,54 @@ class KnowledgeInsights extends Component
             ]);
     }
 
+    /** Which recurring problem the reader is inspecting, if any. */
+    public ?string $inspecting = null;
+
+    /**
+     * Opening an insight should not cost you your place in the list, so the
+     * detail arrives in a dialog rather than a navigation (spec section 10).
+     *
+     * @return array<string, mixed>|null
+     */
+    #[Computed]
+    public function inspected(): ?array
+    {
+        if ($this->inspecting === null) {
+            return null;
+        }
+
+        $incident = OpsIncident::query()->where('incident_uid', $this->inspecting)->first();
+
+        if (! $incident instanceof OpsIncident) {
+            return null;
+        }
+
+        $siblings = OpsIncident::query()
+            ->where('platform', $incident->platform)
+            ->where('signature', $incident->signature)
+            ->get();
+
+        $human = app(KnowledgeTranslator::class)->translate($incident, [
+            'occurrences' => $siblings->count(),
+            'resolved' => $siblings->where('status', 'resolved')->count(),
+            'rolled_back' => $siblings->where('rollback_occurred', true)->count(),
+        ]);
+
+        return [
+            'uid' => $incident->incident_uid,
+            'human' => $human,
+            'occurrences' => $siblings->count(),
+            'resolved' => $siblings->where('status', 'resolved')->count(),
+            'first_seen' => $siblings->min('detected_at'),
+        ];
+    }
+
+    public function inspect(string $incidentUid): void
+    {
+        $this->inspecting = $incidentUid;
+        $this->dispatch('open-modal', name: 'insight-detail');
+    }
+
     /**
      * @return array{covered: list<string>, uncovered: list<string>}
      */

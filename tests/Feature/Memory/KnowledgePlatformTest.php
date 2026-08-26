@@ -147,6 +147,37 @@ class KnowledgePlatformTest extends TestCase
             ->assertSee('Dot.Mines'); // covered platform chip
     }
 
+    public function test_an_insight_opens_in_place_rather_than_navigating_away(): void
+    {
+        // Inspecting a pattern should not cost the reader their place in
+        // the list, so the detail arrives in a dialog.
+        $this->actingAsVerifiedUser();
+
+        $incidents = OpsIncident::factory()->count(2)->create([
+            'platform' => 'dot-mines',
+            'signature' => 'dot-mines:queue:critical',
+            'component' => 'queue',
+            'status' => 'resolved',
+        ]);
+
+        Livewire::test(KnowledgeInsights::class)
+            ->call('inspect', $incidents->first()->incident_uid)
+            ->assertDispatched('open-modal', name: 'insight-detail')
+            ->assertSee('What was detected')
+            ->assertSee('Why it matters')
+            ->assertSee('How much to trust this');
+    }
+
+    public function test_inspecting_an_unknown_record_fails_gracefully(): void
+    {
+        $this->actingAsVerifiedUser();
+
+        Livewire::test(KnowledgeInsights::class)
+            ->call('inspect', 'grd-nope')
+            ->assertSee('could not be loaded')
+            ->assertOk();
+    }
+
     public function test_insights_are_honest_when_nothing_recurs(): void
     {
         $this->actingAsVerifiedUser();

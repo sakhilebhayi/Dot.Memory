@@ -1,13 +1,13 @@
 <div>
     <div style="margin-bottom:1.5rem;">
-        <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;">Insights</h1>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;">Insights</h1>
         <p style="font-size:0.78rem;color:#52525b;margin:0;">What the archive says when you step back: patterns, slow burns, and where the ecosystem is still flying blind.</p>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start;">
+    <div class="dot-grid dot-grid--pair">
         <div style="display:flex;flex-direction:column;gap:1.25rem;">
             <div class="dot-card" style="padding:1.5rem;">
-                <h2 style="font-family:'Syne',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">Recurring problems</h2>
+                <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">Recurring problems</h2>
                 @forelse ($this->recurringProblems as $problem)
                     <a href="{{ route('knowledge.show', $problem['latest_uid']) }}" style="display:block;padding:0.7rem 0;border-top:1px solid rgba(255,255,255,0.05);text-decoration:none;">
                         <div style="font-size:0.82rem;font-weight:600;color:#f4f4f5;margin-bottom:0.25rem;">{{ $problem['headline'] }}</div>
@@ -19,7 +19,7 @@
             </div>
 
             <div class="dot-card" style="padding:1.5rem;">
-                <h2 style="font-family:'Syne',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">Waiting too long</h2>
+                <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">Waiting too long</h2>
                 @forelse ($this->longWatches as $watch)
                     <a href="{{ route('knowledge.show', $watch['uid']) }}" style="display:block;padding:0.7rem 0;border-top:1px solid rgba(255,255,255,0.05);text-decoration:none;">
                         <div style="font-size:0.82rem;font-weight:600;color:#fbbf24;margin-bottom:0.25rem;">{{ $watch['headline'] }}</div>
@@ -32,7 +32,7 @@
         </div>
 
         <div class="dot-card" style="padding:1.5rem;">
-            <h2 style="font-family:'Syne',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">Where the ecosystem is covered</h2>
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">Where the ecosystem is covered</h2>
             @if (count($this->coverage['covered']) > 0)
                 <div style="font-size:0.74rem;color:#52525b;margin-bottom:0.4rem;">Contributing operational knowledge:</div>
                 <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.1rem;">

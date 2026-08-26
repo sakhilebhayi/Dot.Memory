@@ -1,15 +1,44 @@
 <div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
-        <div>
-            <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;letter-spacing:-0.01em;">What the ecosystem knows</h1>
-            <p style="font-size:0.78rem;color:#52525b;margin:0;">Every problem the Dot platforms have lived through, what fixed it, and what it taught us — collected here so no experience is ever lost.</p>
+    @php
+        $tone = $this->attention['tone'];
+        $accent = match ($tone) {
+            'urgent' => '#f87171',
+            'warning' => '#fbbf24',
+            'watching' => '#818cf8',
+            default => '#22c55e',
+        };
+        $glyph = match ($tone) {
+            'urgent' => 'priority_high',
+            'warning' => 'schedule',
+            'watching' => 'visibility',
+            'quiet' => 'psychology',
+            default => 'check_circle',
+        };
+    @endphp
+
+    <div style="margin-bottom:1.5rem;">
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;letter-spacing:-0.01em;">What the ecosystem knows</h1>
+        <p style="font-size:0.78rem;color:#52525b;margin:0;">Every problem the Dot platforms have lived through, what fixed it, and what it taught us.</p>
+    </div>
+
+    {{-- The page's first answer is a sentence, not a number: does anything
+         need you right now? Status is carried by icon + wording as well as
+         colour, so it survives a colour-blind reader and a mono screen. --}}
+    <div class="dot-card" style="padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+        <span class="material-symbols-rounded" aria-hidden="true" style="font-size:22px;color:{{ $accent }};margin-top:0.1rem;">{{ $glyph }}</span>
+        <div style="flex:1 1 16rem;min-width:0;">
+            <div style="font-size:1rem;font-weight:600;color:#f4f4f5;margin-bottom:0.2rem;">{{ $this->attention['headline'] }}</div>
+            <p style="font-size:0.8rem;color:#a1a1aa;margin:0;line-height:1.6;">{{ $this->attention['detail'] }}</p>
         </div>
+        @if ($this->attention['link'] !== null)
+            <a href="{{ $this->attention['link']['url'] }}" style="font-size:0.78rem;font-weight:600;color:{{ $accent }};text-decoration:none;white-space:nowrap;margin-left:auto;">{{ $this->attention['link']['label'] }} &rarr;</a>
+        @endif
     </div>
 
     @if ($this->figures['total'] === 0)
         <div class="dot-card" style="padding:3rem 2.5rem;text-align:center;">
             <span class="material-symbols-rounded" style="font-size:34px;color:var(--accent);margin-bottom:0.8rem;display:inline-block;">psychology</span>
-            <h2 style="font-family:'Syne',sans-serif;font-size:1.05rem;color:#f4f4f5;margin:0 0 0.5rem;">Your knowledge base is still growing</h2>
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.05rem;color:#f4f4f5;margin:0 0 0.5rem;">Your knowledge base is still growing</h2>
             <p style="font-size:0.82rem;color:#71717a;max-width:32rem;margin:0 auto 1.2rem;line-height:1.6;">
                 As the Dot ecosystem runs, its guardian records every production problem, every fix, and every lesson here —
                 so the next time something goes wrong, the answer is already waiting.
@@ -17,7 +46,7 @@
             <a href="{{ route('reliability.index') }}" style="font-size:0.8rem;color:var(--accent);text-decoration:none;">See what is being watched right now →</a>
         </div>
     @else
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;">
+        <div class="dot-grid dot-grid--metrics" style="margin-bottom:2rem;">
             <div class="dot-card" style="padding:1.25rem 1.5rem;">
                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Experiences recorded</div>
                 <div style="font-size:2rem;font-weight:600;color:var(--accent);">{{ $this->figures['total'] }}</div>
@@ -36,10 +65,10 @@
             </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;align-items:start;">
+        <div class="dot-grid dot-grid--split">
             <div class="dot-card" style="padding:1.5rem;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-                    <h2 style="font-family:'Syne',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0;">Recently learned</h2>
+                    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0;">Recently learned</h2>
                     <a href="{{ route('knowledge.index') }}" style="font-size:0.75rem;color:var(--accent);text-decoration:none;">Browse all knowledge →</a>
                 </div>
 
@@ -57,7 +86,7 @@
 
             <div style="display:flex;flex-direction:column;gap:1.25rem;">
                 <div class="dot-card" style="padding:1.5rem;">
-                    <h2 style="font-family:'Syne',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">How this memory is used</h2>
+                    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.9rem;">How this memory is used</h2>
                     <div style="font-size:2rem;font-weight:600;color:var(--accent);margin-bottom:0.2rem;">{{ $this->brainUsage['lookups_week'] }}</div>
                     <div style="font-size:0.76rem;color:#71717a;line-height:1.5;margin-bottom:0.8rem;">
                         times this week Dot.Brain consulted this archive before deciding how to respond to a live problem.
@@ -70,7 +99,7 @@
                 </div>
 
                 <div class="dot-card" style="padding:1.5rem;">
-                    <h2 style="font-family:'Syne',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.7rem;">Explore</h2>
+                    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;color:#f4f4f5;margin:0 0 0.7rem;">Explore</h2>
                     <a href="{{ route('knowledge.timeline') }}" style="display:block;font-size:0.8rem;color:#d4d4d8;text-decoration:none;padding:0.45rem 0;">📅 How knowledge has grown over time</a>
                     <a href="{{ route('knowledge.insights') }}" style="display:block;font-size:0.8rem;color:#d4d4d8;text-decoration:none;padding:0.45rem 0;">💡 Recurring problems &amp; gaps</a>
                     <a href="{{ route('reliability.index') }}" style="display:block;font-size:0.8rem;color:#d4d4d8;text-decoration:none;padding:0.45rem 0;">🔧 Storage reliability (technical)</a>

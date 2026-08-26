@@ -1,5 +1,5 @@
 <div class="dot-card" style="padding:1.5rem;">
-    <h3 style="font-family:'Syne',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Durability Outcomes</h3>
+    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Durability Outcomes</h3>
     <div wire:loading.delay class="dot-loading-overlay">
         <span class="material-symbols-rounded dot-spin" style="font-size:22px;color:#818cf8;">progress_activity</span>
     </div>

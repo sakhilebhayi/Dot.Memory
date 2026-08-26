@@ -30,10 +30,22 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
+    // The landing view is the knowledge platform: what the ecosystem has
+    // learned, in human language. The storage-reliability telemetry that
+    // used to live here moved to /reliability, unchanged.
+    Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+
+    Route::get('/knowledge', fn () => view('knowledge.index'))->name('knowledge.index');
+    Route::get('/knowledge/{incidentUid}', fn (string $incidentUid) => view('knowledge.show', [
+        'incidentUid' => $incidentUid,
+    ]))->name('knowledge.show');
+    Route::get('/timeline', fn () => view('knowledge.timeline'))->name('knowledge.timeline');
+    Route::get('/insights', fn () => view('knowledge.insights'))->name('knowledge.insights');
+
+    Route::get('/reliability', function () {
         $classes = RetrievalClass::with(['observations' => fn ($q) => $q->orderByDesc('window_end')->limit(1)])->get();
 
-        return view('dashboard', [
+        return view('reliability.index', [
             'retrievalClassCount' => $classes->count(),
             'classesMeetingSla' => $classes->filter(fn ($c) => $c->observations->first()?->sla_met === true)->count(),
             'activeIndexCount' => Index::where('status', 'active')->count(),
@@ -41,7 +53,7 @@ Route::middleware([
                 ->where('verified_at', '>=', now()->subDays(90))
                 ->count(),
         ]);
-    })->name('dashboard');
+    })->name('reliability.index');
 
     Route::get('/indexes', [IndexController::class, 'index'])->name('indexes.index');
     Route::get('/durability', [DurabilityController::class, 'index'])->name('durability.index');

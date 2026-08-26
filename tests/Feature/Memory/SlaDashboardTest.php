@@ -55,9 +55,9 @@ class SlaDashboardTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('dashboard'))
+            ->get(route('reliability.index'))
             ->assertOk()
-            ->assertViewIs('dashboard')
+            ->assertViewIs('reliability.index')
             ->assertSee(RetrievalClass::AGENT_CONTEXT)
             ->assertSee('620ms');
     }

@@ -95,7 +95,7 @@
                 <div class="brand-name">Dot.Memory</div>
                 <div class="brand-status">
                     <div class="live-dot"></div>
-                    <span class="brand-subtitle">Storage &amp; Retrieval Telemetry</span>
+                    <span class="brand-subtitle">Ecosystem Memory</span>
                 </div>
             </div>
         </div>
@@ -104,7 +104,27 @@
 
         <nav class="sidebar-nav">
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <span class="material-symbols-rounded nav-icon">dashboard</span>
+                <span class="material-symbols-rounded nav-icon">home</span>
+                Overview
+            </a>
+
+            <div class="nav-section-label">Knowledge</div>
+            <a href="{{ route('knowledge.index') }}" class="nav-item {{ request()->routeIs('knowledge.index') || request()->routeIs('knowledge.show') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">psychology</span>
+                What we know
+            </a>
+            <a href="{{ route('knowledge.timeline') }}" class="nav-item {{ request()->routeIs('knowledge.timeline') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">timeline</span>
+                Timeline
+            </a>
+            <a href="{{ route('knowledge.insights') }}" class="nav-item {{ request()->routeIs('knowledge.insights') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">lightbulb</span>
+                Insights
+            </a>
+
+            <div class="nav-section-label">Reliability</div>
+            <a href="{{ route('reliability.index') }}" class="nav-item {{ request()->routeIs('reliability.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">speed</span>
                 SLA Dashboard
             </a>
             <a href="{{ route('indexes.index') }}" class="nav-item {{ request()->routeIs('indexes.*') ? 'active' : '' }}">

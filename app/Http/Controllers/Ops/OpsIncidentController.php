@@ -122,6 +122,19 @@ class OpsIncidentController extends Controller
             ->orderByDesc('detected_at')
             ->get();
 
+        // Usage proof for the "how memory helps Dot.Brain" surface --
+        // envelope-only, and never allowed to break the lookup itself.
+        try {
+            \Illuminate\Support\Facades\DB::table('ops_recall_events')->insert([
+                'platform' => $validated['platform'],
+                'signature' => $validated['signature'],
+                'matches' => $incidents->count(),
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable) {
+            // Recall must answer even if usage accounting fails.
+        }
+
         $resolved = $incidents->where('status', 'resolved')->count();
         $rolledBack = $incidents->where('rollback_occurred', true)->count();
         $closed = $resolved + $incidents->whereIn('status', ['rolled_back', 'escalated'])->count();

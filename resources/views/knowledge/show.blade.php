@@ -1,5 +1,5 @@
 <x-app-layout>
-<div style="padding:2rem 2.5rem 3rem;">
+<div class="dot-page-body">
     <livewire:memory.knowledge-detail :incident-uid="$incidentUid" />
 </div>
 </x-app-layout>

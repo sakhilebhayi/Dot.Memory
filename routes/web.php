@@ -40,7 +40,11 @@ Route::middleware([
         'incidentUid' => $incidentUid,
     ]))->name('knowledge.show');
     Route::get('/timeline', fn () => view('knowledge.timeline'))->name('knowledge.timeline');
-    Route::get('/insights', fn () => view('knowledge.insights'))->name('knowledge.insights');
+    Route::get('/patterns', fn () => view('knowledge.patterns'))->name('knowledge.patterns');
+
+    // Insights was two half-pages: recurrence (now the Patterns ledger) and
+    // the gaps beside it. Both live on /patterns, so this only forwards.
+    Route::get('/insights', fn () => redirect()->route('knowledge.patterns'))->name('knowledge.insights');
 
     Route::get('/reliability', function () {
         $classes = RetrievalClass::with(['observations' => fn ($q) => $q->orderByDesc('window_end')->limit(1)])->get();

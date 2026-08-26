@@ -1,39 +1,41 @@
 <x-app-layout>
-<div style="padding:2rem 2.5rem 3rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
-        <div>
-            <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;letter-spacing:-0.01em;">Storage &amp; Retrieval SLA Dashboard</h1>
-            <p style="font-size:0.78rem;color:#52525b;margin:0;">
-                <strong style="color:#71717a;">What this is:</strong> the technical health of the memory infrastructure itself — how fast stored knowledge can be retrieved, and whether that meets its promises.
-                Dot.Memory stores without reading; everything below is operational telemetry, never content.
-            </p>
-        </div>
-    </div>
+<div class="dot-page-body">
+    <x-dot.page
+        title="Storage & retrieval"
+        lede="The technical health of the memory infrastructure itself: how fast stored knowledge can be retrieved, and whether that meets its promises. Dot.Memory stores without reading, so everything here is operational telemetry, never content."
+    />
 
-    <div class="dot-grid dot-grid--metrics" style="margin-bottom:2rem;">
-        <div class="dot-card" style="padding:1.25rem 1.5rem;">
-            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Retrieval Classes</div>
-            <div class="metric-val" style="font-size:2rem;font-weight:600;color:var(--accent);">{{ $retrievalClassCount }}</div>
-        </div>
-        <div class="dot-card" style="padding:1.25rem 1.5rem;">
-            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Classes Meeting SLA</div>
-            <div class="metric-val" style="font-size:2rem;font-weight:600;color:#22c55e;">{{ $classesMeetingSla }}/{{ $retrievalClassCount }}</div>
-        </div>
-        <div class="dot-card" style="padding:1.25rem 1.5rem;">
-            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Active Indexes</div>
-            <div class="metric-val" style="font-size:2rem;font-weight:600;color:#f4f4f5;">{{ $activeIndexCount }}</div>
-        </div>
-        <div class="dot-card" style="padding:1.25rem 1.5rem;">
-            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:#52525b;margin-bottom:0.75rem;">Durability Failures (90d)</div>
-            <div class="metric-val" style="font-size:2rem;font-weight:600;color:{{ $recentDurabilityFailures > 0 ? '#ef4444' : '#22c55e' }};">{{ $recentDurabilityFailures }}</div>
-        </div>
-    </div>
+    <div class="dot-stack">
+        <x-dot.panels :cols="4">
+            <x-dot.panel>
+                <x-dot.readout label="Retrieval classes" :value="$retrievalClassCount" :pad="2" />
+            </x-dot.panel>
+            <x-dot.panel>
+                <x-dot.readout
+                    label="Classes meeting SLA"
+                    :value="$classesMeetingSla.'/'.$retrievalClassCount"
+                    :tone="$retrievalClassCount > 0 && $classesMeetingSla === $retrievalClassCount ? 'ok' : null"
+                />
+            </x-dot.panel>
+            <x-dot.panel>
+                <x-dot.readout label="Active indexes" :value="$activeIndexCount" :pad="2" />
+            </x-dot.panel>
+            <x-dot.panel>
+                <x-dot.readout
+                    label="Durability failures (90d)"
+                    :value="$recentDurabilityFailures"
+                    :pad="2"
+                    :tone="$recentDurabilityFailures > 0 ? 'bad' : 'ok'"
+                />
+            </x-dot.panel>
+        </x-dot.panels>
 
-    <livewire:memory.sla-dashboard />
+        <livewire:memory.sla-dashboard />
 
-    <div class="dot-grid dot-grid--pair" style="margin-top:1.25rem;">
-        <livewire:memory.index-inventory />
-        <livewire:memory.durability-outcomes />
+        <div class="dot-grid dot-grid--pair">
+            <livewire:memory.index-inventory />
+            <livewire:memory.durability-outcomes />
+        </div>
     </div>
 </div>
 </x-app-layout>

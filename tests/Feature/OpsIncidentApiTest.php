@@ -173,6 +173,19 @@ class OpsIncidentApiTest extends TestCase
         );
     }
 
+    public function test_recall_records_a_usage_event(): void
+    {
+        $this->actingAsService();
+
+        OpsIncident::factory()->create(['platform' => 'dot-mines', 'signature' => 'sig-used']);
+
+        $this->getJson('/api/ops/recall?platform=dot-mines&signature=sig-used')->assertOk();
+        $this->getJson('/api/ops/recall?platform=dot-mines&signature=sig-used')->assertOk();
+
+        $this->assertSame(2, DB::table('ops_recall_events')->where('signature', 'sig-used')->count());
+        $this->assertSame(1, (int) DB::table('ops_recall_events')->where('signature', 'sig-used')->value('matches'));
+    }
+
     public function test_recall_with_no_history_returns_zero_matches(): void
     {
         $this->actingAsService();

@@ -11,7 +11,7 @@
     @if($open)
     <div style="position:absolute;top:calc(100% + 8px);right:0;width:320px;max-height:420px;overflow-y:auto;background:#141416;border:1px solid rgba(255,255,255,0.09);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,0.45);z-index:50;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);">
-            <span style="font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;color:#f4f4f5;">Notifications</span>
+            <span style="font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:700;color:#f4f4f5;">Notifications</span>
             @if($this->unreadCount > 0)
                 <button wire:click="markAllAsRead" style="background:none;border:none;color:#818cf8;font-size:11px;font-weight:600;cursor:pointer;padding:0;">Mark all read</button>
             @endif

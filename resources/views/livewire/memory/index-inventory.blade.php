@@ -1,5 +1,5 @@
 <div class="dot-card" style="padding:1.5rem;">
-    <h3 style="font-family:'Syne',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Index Inventory</h3>
+    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Index Inventory</h3>
     <div wire:loading.delay class="dot-loading-overlay">
         <span class="material-symbols-rounded dot-spin" style="font-size:22px;color:#818cf8;">progress_activity</span>
     </div>
@@ -19,7 +19,7 @@
             <tbody>
                 @forelse($this->indexes as $index)
                     <tr style="border-top:1px solid rgba(255,255,255,0.06);">
-                        <td style="padding:8px 10px;color:#f4f4f5;font-family:'JetBrains Mono',monospace;">{{ $index->index_key }}</td>
+                        <td style="padding:8px 10px;color:#f4f4f5;font-family:'IBM Plex Mono',monospace;">{{ $index->index_key }}</td>
                         <td style="padding:8px 10px;color:#a1a1aa;">{{ $index->type }}</td>
                         <td style="padding:8px 10px;color:#a1a1aa;">v{{ $index->version }}</td>
                         <td style="padding:8px 10px;color:#a1a1aa;">{{ $index->storageTier->name ?? '—' }}</td>

@@ -1,6 +1,6 @@
 <div>
     <div style="margin-bottom:1.5rem;">
-        <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;">Timeline</h1>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;margin:0 0 0.2rem;">Timeline</h1>
         <p style="font-size:0.78rem;color:#52525b;margin:0;">How the ecosystem's knowledge has grown — problems discovered, fixed, and reused, in the order it happened.</p>
     </div>
 
@@ -25,7 +25,7 @@
         </div>
     @empty
         <div class="dot-card" style="padding:3rem 2.5rem;text-align:center;">
-            <h2 style="font-family:'Syne',sans-serif;font-size:1.05rem;color:#f4f4f5;margin:0 0 0.5rem;">The story hasn't started yet</h2>
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.05rem;color:#f4f4f5;margin:0 0 0.5rem;">The story hasn't started yet</h2>
             <p style="font-size:0.82rem;color:#71717a;max-width:32rem;margin:0 auto;line-height:1.6;">
                 Once the ecosystem's guardian records its first experience, this timeline becomes the running story of what the Dot platforms have lived through and learned.
             </p>

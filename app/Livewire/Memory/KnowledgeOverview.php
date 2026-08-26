@@ -54,6 +54,72 @@ class KnowledgeOverview extends Component
     }
 
     /**
+     * The single line the page opens with. A dashboard's first job is to
+     * answer "do I need to do anything?" -- four equal metric tiles make a
+     * reader do that arithmetic themselves, so the answer is computed here
+     * and stated in words.
+     *
+     * @return array{tone: string, headline: string, detail: string, link: array{label: string, url: string}|null}
+     */
+    #[Computed]
+    public function attention(): array
+    {
+        $watching = OpsIncident::query()->whereIn('status', ['open', 'remediating'])->get();
+        $needsPerson = $watching->where('status', 'escalated')->count()
+            + OpsIncident::query()->where('status', 'escalated')->count();
+        $stale = $watching->filter(fn (OpsIncident $i): bool => $i->detected_at->lt(now()->subDay()));
+
+        if (OpsIncident::query()->count() === 0) {
+            return [
+                'tone' => 'quiet',
+                'headline' => 'Nothing to review yet',
+                'detail' => 'As the Dot platforms run, what they learn will collect here.',
+                'link' => null,
+            ];
+        }
+
+        if ($needsPerson > 0) {
+            return [
+                'tone' => 'urgent',
+                'headline' => $needsPerson === 1
+                    ? 'One problem needs a person'
+                    : "{$needsPerson} problems need a person",
+                'detail' => 'Automatic remediation was not safe, so these were handed over for a human to investigate.',
+                'link' => ['label' => 'Review them', 'url' => route('knowledge.index', ['status' => 'escalated'])],
+            ];
+        }
+
+        if ($stale->isNotEmpty()) {
+            return [
+                'tone' => 'warning',
+                'headline' => $stale->count() === 1
+                    ? 'One problem has been unresolved for over a day'
+                    : "{$stale->count()} problems have been unresolved for over a day",
+                'detail' => 'These are still being watched, but they have not cleared on their own.',
+                'link' => ['label' => 'See what is stuck', 'url' => route('knowledge.insights')],
+            ];
+        }
+
+        if ($watching->isNotEmpty()) {
+            return [
+                'tone' => 'watching',
+                'headline' => $watching->count() === 1
+                    ? 'One problem is being watched'
+                    : "{$watching->count()} problems are being watched",
+                'detail' => 'Nothing needs you right now -- the guardian is tracking these and will act or escalate.',
+                'link' => ['label' => 'Look anyway', 'url' => route('knowledge.index', ['status' => 'open'])],
+            ];
+        }
+
+        return [
+            'tone' => 'clear',
+            'headline' => 'Everything is clear',
+            'detail' => 'No open problems across the platforms being watched.',
+            'link' => null,
+        ];
+    }
+
+    /**
      * Proof of usefulness: how often Dot.Brain consulted this memory.
      *
      * @return array{lookups_week: int, last_lookup: string|null}

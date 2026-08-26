@@ -1,7 +1,7 @@
 <div class="dot-card" style="padding:1.5rem;">
     @if ($this->canGovern() && $this->openEscalations->isNotEmpty())
         <div style="border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:1rem;margin-bottom:1.25rem;">
-            <h4 style="font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#f4f4f5;margin:0 0 0.75rem;">Escalations</h4>
+            <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:700;color:#f4f4f5;margin:0 0 0.75rem;">Escalations</h4>
             @foreach ($this->openEscalations as $escalation)
                 <div style="padding:0.6rem 0;border-top:1px solid rgba(255,255,255,0.06);">
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
@@ -28,7 +28,7 @@
         </div>
     @endif
 
-    <h3 style="font-family:'Syne',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Retrieval SLA Attainment</h3>
+    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.875rem;font-weight:700;color:#f4f4f5;margin:0 0 1.25rem;">Retrieval SLA Attainment</h3>
     <div wire:loading.delay class="dot-loading-overlay">
         <span class="material-symbols-rounded dot-spin" style="font-size:22px;color:#818cf8;">progress_activity</span>
     </div>

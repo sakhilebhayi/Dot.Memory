@@ -1,5 +1,5 @@
 <x-app-layout>
 <div class="dot-page-body">
-    <livewire:memory.knowledge-timeline />
+    <livewire:memory.knowledge-patterns />
 </div>
 </x-app-layout>

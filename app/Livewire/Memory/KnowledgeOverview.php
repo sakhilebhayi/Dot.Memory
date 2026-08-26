@@ -4,6 +4,8 @@ namespace App\Livewire\Memory;
 
 use App\Models\OpsIncident;
 use App\Services\Memory\KnowledgeTranslator;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -36,7 +38,12 @@ class KnowledgeOverview extends Component
     /**
      * Newest knowledge first, already translated for display.
      *
-     * @return Collection<int, array{incident: OpsIncident, human: array<string, mixed>}>
+     * Deduplicated by pattern. Listing raw incidents meant one noisy problem
+     * could fill the panel with five copies of its own headline, which reads
+     * as five things learned when it is one thing learned five times. The
+     * repeat count says so explicitly instead.
+     *
+     * @return Collection<int, array{incident: OpsIncident, human: array<string, mixed>, occurrences: int}>
      */
     #[Computed]
     public function recentKnowledge(): Collection
@@ -45,12 +52,21 @@ class KnowledgeOverview extends Component
 
         return OpsIncident::query()
             ->orderByDesc('detected_at')
-            ->limit(5)
             ->get()
-            ->map(fn (OpsIncident $incident): array => [
-                'incident' => $incident,
-                'human' => $translator->translate($incident, $this->historyFor($incident)),
-            ]);
+            ->groupBy(fn (OpsIncident $incident): string => $incident->platform.'|'.$incident->signature)
+            ->map(function (Collection $group) use ($translator): array {
+                /** @var OpsIncident $latest */
+                $latest = $group->first();
+
+                return [
+                    'incident' => $latest,
+                    'human' => $translator->translate($latest, $this->historyFor($latest)),
+                    'occurrences' => $group->count(),
+                ];
+            })
+            ->sortByDesc(fn (array $entry): string => $entry['incident']->detected_at->toIso8601String())
+            ->take(5)
+            ->values();
     }
 
     /**
@@ -116,6 +132,26 @@ class KnowledgeOverview extends Component
             'headline' => 'Everything is clear',
             'detail' => 'No open problems across the platforms being watched.',
             'link' => null,
+        ];
+    }
+
+    /**
+     * What the state bar reports alongside the state itself: an instrument
+     * that says "all clear" is only trustworthy if it also says what it is
+     * watching and when it last heard anything.
+     *
+     * @return array{platforms: int, last_seen: string}
+     */
+    #[Computed]
+    public function coverage(): array
+    {
+        $lastSeen = OpsIncident::query()->max('detected_at');
+
+        return [
+            'platforms' => OpsIncident::query()->distinct()->count('platform'),
+            'last_seen' => is_string($lastSeen)
+                ? Carbon::parse($lastSeen)->diffForHumans(syntax: CarbonInterface::DIFF_ABSOLUTE).' ago'
+                : 'never',
         ];
     }
 

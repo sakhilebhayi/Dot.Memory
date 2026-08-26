@@ -4,8 +4,8 @@ namespace Tests\Feature\Memory;
 
 use App\Livewire\Memory\KnowledgeBrowser;
 use App\Livewire\Memory\KnowledgeDetail;
-use App\Livewire\Memory\KnowledgeInsights;
 use App\Livewire\Memory\KnowledgeOverview;
+use App\Livewire\Memory\KnowledgePatterns;
 use App\Livewire\Memory\KnowledgeTimeline;
 use App\Models\OpsIncident;
 use App\Models\User;
@@ -28,7 +28,7 @@ class KnowledgePlatformTest extends TestCase
 
     public function test_every_knowledge_route_requires_authentication(): void
     {
-        foreach (['/dashboard', '/knowledge', '/timeline', '/insights', '/reliability'] as $path) {
+        foreach (['/dashboard', '/knowledge', '/timeline', '/patterns', '/reliability'] as $path) {
             $this->get($path)->assertRedirect('/login');
         }
     }
@@ -130,7 +130,7 @@ class KnowledgePlatformTest extends TestCase
             ->assertSee('reusable knowledge');
     }
 
-    public function test_insights_surface_recurrence_and_coverage(): void
+    public function test_patterns_surface_recurrence_and_coverage(): void
     {
         $this->actingAsVerifiedUser();
 
@@ -141,49 +141,75 @@ class KnowledgePlatformTest extends TestCase
             'status' => 'resolved',
         ]);
 
-        Livewire::test(KnowledgeInsights::class)
+        Livewire::test(KnowledgePatterns::class)
             ->assertSee('Background work started backing up on Dot.Mines')
-            ->assertSee('Seen 3 times')
-            ->assertSee('Dot.Mines'); // covered platform chip
+            ->assertSee('Dot.Mines');
     }
 
-    public function test_an_insight_opens_in_place_rather_than_navigating_away(): void
+    public function test_a_pattern_expands_in_place_rather_than_navigating_away(): void
     {
-        // Inspecting a pattern should not cost the reader their place in
-        // the list, so the detail arrives in a dialog.
+        // The reason to open a pattern is to compare it against the others,
+        // so its evidence unfolds inside the ledger and the rows around it
+        // stay on screen. A dialog would cover up the comparison.
         $this->actingAsVerifiedUser();
 
-        $incidents = OpsIncident::factory()->count(2)->create([
+        OpsIncident::factory()->count(2)->create([
             'platform' => 'dot-mines',
             'signature' => 'dot-mines:queue:critical',
             'component' => 'queue',
             'status' => 'resolved',
         ]);
 
-        Livewire::test(KnowledgeInsights::class)
-            ->call('inspect', $incidents->first()->incident_uid)
-            ->assertDispatched('open-modal', name: 'insight-detail')
-            ->assertSee('What was detected')
-            ->assertSee('Why it matters')
-            ->assertSee('How much to trust this');
+        Livewire::test(KnowledgePatterns::class)
+            ->call('toggle', 'dot-mines|dot-mines:queue:critical')
+            ->assertSet('expanded', 'dot-mines|dot-mines:queue:critical')
+            ->assertSee('Every time this happened')
+            ->assertSee('Background work started backing up on Dot.Mines');
     }
 
-    public function test_inspecting_an_unknown_record_fails_gracefully(): void
+    public function test_toggling_the_open_pattern_closes_it(): void
     {
         $this->actingAsVerifiedUser();
 
-        Livewire::test(KnowledgeInsights::class)
-            ->call('inspect', 'grd-nope')
-            ->assertSee('could not be loaded')
+        OpsIncident::factory()->create([
+            'platform' => 'dot-mines',
+            'signature' => 'dot-mines:queue:critical',
+            'component' => 'queue',
+        ]);
+
+        Livewire::test(KnowledgePatterns::class)
+            ->call('toggle', 'dot-mines|dot-mines:queue:critical')
+            ->call('toggle', 'dot-mines|dot-mines:queue:critical')
+            ->assertSet('expanded', '')
+            ->assertDontSee('Every time this happened');
+    }
+
+    public function test_expanding_an_unknown_pattern_fails_gracefully(): void
+    {
+        $this->actingAsVerifiedUser();
+
+        Livewire::test(KnowledgePatterns::class)
+            ->call('toggle', 'nope|nope')
             ->assertOk();
     }
 
-    public function test_insights_are_honest_when_nothing_recurs(): void
+    public function test_the_recurring_filter_is_honest_when_nothing_recurs(): void
     {
         $this->actingAsVerifiedUser();
 
-        Livewire::test(KnowledgeInsights::class)
-            ->assertSee('No problem has repeated itself yet');
+        OpsIncident::factory()->create();
+
+        Livewire::test(KnowledgePatterns::class)
+            ->set('filter', 'recurring')
+            ->assertSee('Nothing has happened twice yet');
+    }
+
+    public function test_insights_forwards_to_patterns(): void
+    {
+        // The old URL is in links and bookmarks; it must not 404.
+        $this->actingAsVerifiedUser();
+
+        $this->get('/insights')->assertRedirect(route('knowledge.patterns'));
     }
 
     public function test_overview_component_reports_honest_figures(): void

@@ -3,15 +3,9 @@
     $tone = match ($a['tone']) {
         'urgent' => 'bad',
         'warning' => 'warn',
-        'watching' => 'info',
+        'watching' => 'warn',
+        'quiet' => 'idle',
         default => 'ok',
-    };
-    $glyph = match ($a['tone']) {
-        'urgent' => 'priority_high',
-        'warning' => 'schedule',
-        'watching' => 'visibility',
-        'quiet' => 'psychology',
-        default => 'check_circle',
     };
 @endphp
 
@@ -21,18 +15,16 @@
         lede="Every problem the Dot platforms have lived through, what fixed it, and what it taught us."
     />
 
-    {{-- The page's first answer is a sentence, not a number: does anything
-         need you right now? Icon and wording carry it as well as colour. --}}
-    <x-dot.card class="dot-attention dot-attention--{{ $tone }}">
-        <span class="material-symbols-rounded dot-attention__icon" aria-hidden="true">{{ $glyph }}</span>
-        <div class="dot-attention__text">
-            <p class="dot-attention__headline">{{ $a['headline'] }}</p>
-            <p class="dot-attention__detail">{{ $a['detail'] }}</p>
-        </div>
-        @if ($a['link'] !== null)
-            <a class="dot-attention__link" href="{{ $a['link']['url'] }}">{{ $a['link']['label'] }} &rarr;</a>
-        @endif
-    </x-dot.card>
+    {{-- The instrument's pulse. The state is written out, not just lit, so
+         nothing here depends on seeing a colour. --}}
+    <x-dot.statebar
+        :tone="$tone"
+        :state="$a['headline']"
+        :detail="$a['detail']"
+        :meta="$this->coverage['platforms'].' platforms · last signal '.$this->coverage['last_seen']"
+        :link-label="$a['link']['label'] ?? null"
+        :link-href="$a['link']['url'] ?? null"
+    />
 
     @if ($this->figures['total'] === 0)
         <x-dot.empty title="Your knowledge base is still growing">
@@ -43,24 +35,34 @@
             </x-slot:action>
         </x-dot.empty>
     @else
-        <div class="dot-grid dot-grid--metrics dot-stack">
-            <x-dot.stat label="Experiences recorded" :value="$this->figures['total']" tone="accent" />
-            <x-dot.stat label="Problems fixed" :value="$this->figures['fixed']" tone="ok" />
-            <x-dot.stat
-                label="Being watched now"
-                :value="$this->figures['watching']"
-                :tone="$this->figures['watching'] > 0 ? 'warn' : 'neutral'"
-            />
-            <x-dot.stat label="Platforms covered" :value="$this->figures['platforms']" />
-        </div>
+        {{-- Readouts share edges: one gauge cluster, not four floating tiles. --}}
+        <div class="dot-stack">
+        <x-dot.panels :cols="4">
+            <x-dot.panel>
+                <x-dot.readout label="Experiences recorded" :value="$this->figures['total']" />
+            </x-dot.panel>
+            <x-dot.panel>
+                <x-dot.readout label="Problems fixed" :value="$this->figures['fixed']" tone="ok" />
+            </x-dot.panel>
+            <x-dot.panel>
+                <x-dot.readout
+                    label="Being watched now"
+                    :value="$this->figures['watching']"
+                    :tone="$this->figures['watching'] > 0 ? 'warn' : null"
+                />
+            </x-dot.panel>
+            <x-dot.panel>
+                <x-dot.readout label="Platforms covered" :value="$this->figures['platforms']" :pad="2" />
+            </x-dot.panel>
+        </x-dot.panels>
 
-        <div class="dot-grid dot-grid--split">
-            <x-dot.card class="dot-pad" title="Recently learned">
-                <x-slot:action>
-                    <a href="{{ route('knowledge.index') }}">Browse all knowledge &rarr;</a>
-                </x-slot:action>
-
-                <ul class="dot-list">
+        <x-dot.panels cols="split">
+            <x-dot.panel
+                title="Recently learned"
+                action-label="Browse all →"
+                :action-href="route('knowledge.index')"
+            >
+                <ul class="dot-list dot-list--flush">
                     @foreach ($this->recentKnowledge as $entry)
                         <li>
                             <a class="dot-list__row" href="{{ route('knowledge.show', $entry['incident']->incident_uid) }}">
@@ -70,40 +72,42 @@
                                         :label="$entry['human']['status_label']"
                                         :tone="$entry['human']['status_label'] === 'Fixed' ? 'ok' : 'info'"
                                     />
+                                    @if ($entry['occurrences'] > 1)
+                                        <span class="dot-list__repeat">{{ $entry['occurrences'] }}&times;</span>
+                                    @endif
                                 </span>
                                 <span class="dot-list__body">{{ $entry['human']['what_was_learned'] }}</span>
                             </a>
                         </li>
                     @endforeach
                 </ul>
-            </x-dot.card>
+            </x-dot.panel>
 
-            <div class="dot-stack">
-                <x-dot.card class="dot-pad" title="How this memory is used">
-                    <div class="dot-stat__value dot-stat__value--accent">{{ $this->brainUsage['lookups_week'] }}</div>
-                    <p class="dot-note">
-                        times this week Dot.Brain consulted this archive before deciding how to respond to a live problem.
-                    </p>
-                    <p class="dot-note dot-note--faint">
-                        @if ($this->brainUsage['last_lookup'] !== null)
-                            Last consulted {{ \Illuminate\Support\Carbon::parse($this->brainUsage['last_lookup'])->diffForHumans() }}
-                        @else
-                            Not consulted yet &mdash; the first live problem will change that.
-                        @endif
-                    </p>
-                </x-dot.card>
+            <x-dot.panel title="How this memory is used">
+                <x-dot.readout
+                    label="Lookups this week"
+                    :value="$this->brainUsage['lookups_week']"
+                    tone="signal"
+                    context="Times Dot.Brain consulted this archive before deciding how to respond to a live problem."
+                />
+                <p class="dot-note dot-note--faint">
+                    @if ($this->brainUsage['last_lookup'] !== null)
+                        Last consulted {{ \Illuminate\Support\Carbon::parse($this->brainUsage['last_lookup'])->diffForHumans() }}
+                    @else
+                        Not consulted yet &mdash; the first live problem will change that.
+                    @endif
+                </p>
 
-                <x-dot.card class="dot-pad" title="Explore">
-                    <ul class="dot-links">
-                        <li><a href="{{ route('knowledge.timeline') }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">timeline</span>How knowledge has grown</a></li>
-                        <li><a href="{{ route('knowledge.insights') }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">lightbulb</span>Recurring problems &amp; gaps</a></li>
-                        <li><a href="{{ route('reliability.index') }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">speed</span>Storage reliability</a></li>
-                    </ul>
-                </x-dot.card>
-            </div>
+                <ul class="dot-links dot-links--spaced">
+                    <li><a href="{{ route('knowledge.patterns') }}">
+                        <span class="material-symbols-rounded" aria-hidden="true">repeat</span>Patterns that keep recurring</a></li>
+                    <li><a href="{{ route('knowledge.timeline') }}">
+                        <span class="material-symbols-rounded" aria-hidden="true">timeline</span>How knowledge has grown</a></li>
+                    <li><a href="{{ route('reliability.index') }}">
+                        <span class="material-symbols-rounded" aria-hidden="true">speed</span>Storage reliability</a></li>
+                </ul>
+            </x-dot.panel>
+        </x-dot.panels>
         </div>
     @endif
 </div>

@@ -11,10 +11,10 @@
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
         <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
-        <!-- Fonts — same Space Grotesk / IBM Plex Sans / IBM Plex Mono pairing as resources/views/welcome.blade.php -->
+        <!-- Fonts — same IBM Plex superfamily pairing (Condensed / Sans / Mono) as resources/views/welcome.blade.php -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -37,7 +37,7 @@
                 --paper: #eef1f5;
                 --mist: #9aa4b6;
                 --line: rgba(238, 241, 245, 0.14);
-                --font-display: 'Space Grotesk', system-ui, sans-serif;
+                --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
                 --font-body: 'IBM Plex Sans', system-ui, sans-serif;
                 --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
             }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Intelligence\LoopController;
 use App\Http\Controllers\Ops\OpsIncidentController;
+use App\Http\Controllers\Ops\GuardianBlupinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,3 +30,8 @@ Route::middleware('auth:sanctum')->prefix('ops')->group(function () {
     Route::get('/incidents', [OpsIncidentController::class, 'index']);
     Route::get('/recall', [OpsIncidentController::class, 'recall']);
 });
+
+// dot-guardian/v1 health for the BluPin signal pipeline: Memory holds the
+// loop records whose arrival IS that pipeline's health, so it answers.
+Route::middleware('auth:sanctum')->get('/guardian/blupin',
+    [GuardianBlupinController::class, 'show']);

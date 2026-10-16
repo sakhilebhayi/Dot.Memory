@@ -3,13 +3,14 @@
 namespace Tests\Feature\Guardian;
 
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 use App\Services\Guardian\CheckResult;
 use App\Services\Guardian\Checks\SchedulerCheck;
 use App\Services\Guardian\Contracts\GuardianCheck;
 use App\Services\Guardian\GuardianHealthReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Testing\TestResponse;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class GuardianEndpointTest extends TestCase
@@ -21,7 +22,7 @@ class GuardianEndpointTest extends TestCase
         $this->getJson('/api/guardian/health')->assertUnauthorized();
     }
 
-    private function report(): \Illuminate\Testing\TestResponse
+    private function report(): TestResponse
     {
         Sanctum::actingAs(User::factory()->create(), ['*']);
 

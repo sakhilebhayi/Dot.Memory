@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\Memory\DurabilityController;
 use App\Http\Controllers\Memory\IndexController;
+use App\Http\Controllers\SchedulerProbeController;
 use App\Models\DurabilityOutcome;
 use App\Models\Index;
 use App\Models\RetrievalClass;
@@ -12,6 +13,11 @@ use Laravel\Jetstream\Jetstream;
 
 Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
     ->name('ecosystem.auth');
+
+// Public liveness probe (no auth, no secrets): answers 503 once the cron
+// scheduler has not been heard from. Watched from GitHub by
+// .github/workflows/scheduler-watchdog.yml.
+Route::get('/up/scheduler', SchedulerProbeController::class)->name('up.scheduler');
 
 Route::get('/', fn () => view('welcome'));
 

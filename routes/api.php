@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuardianHealthController;
 use App\Http\Controllers\Intelligence\LoopController;
 use App\Http\Controllers\Ops\OpsIncidentController;
 use Illuminate\Http\Request;
@@ -29,3 +30,8 @@ Route::middleware('auth:sanctum')->prefix('ops')->group(function () {
     Route::get('/incidents', [OpsIncidentController::class, 'index']);
     Route::get('/recall', [OpsIncidentController::class, 'recall']);
 });
+
+// Guardian observability report for Dot.Brain (dot-guardian/v1). Read with
+// the guardian's existing Sanctum service token (the same bearer the
+// incident archive and recall use), so no second secret exists.
+Route::middleware('auth:sanctum')->get('/guardian/health', GuardianHealthController::class)->name('guardian.health');

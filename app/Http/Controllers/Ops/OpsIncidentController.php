@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\OpsIncident;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Operational-memory API for the Dot.Brain guardian.
@@ -125,7 +126,7 @@ class OpsIncidentController extends Controller
         // Usage proof for the "how memory helps Dot.Brain" surface --
         // envelope-only, and never allowed to break the lookup itself.
         try {
-            \Illuminate\Support\Facades\DB::table('ops_recall_events')->insert([
+            DB::table('ops_recall_events')->insert([
                 'platform' => $validated['platform'],
                 'signature' => $validated['signature'],
                 'matches' => $incidents->count(),

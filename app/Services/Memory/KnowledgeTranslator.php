@@ -49,7 +49,7 @@ class KnowledgeTranslator
 
     /**
      * @param  array{occurrences: int, resolved: int, rolled_back: int}|null  $history
-     *   Same-signature history for the trust verdict; null renders neutral trust.
+     *                                                                                  Same-signature history for the trust verdict; null renders neutral trust.
      * @return array{headline: string, what_happened: string, what_was_learned: string, why_it_matters: string, severity_label: string, status_label: string, platform_label: string, trust: array{label: string, explanation: string}}
      */
     public function translate(OpsIncident $incident, ?array $history = null): array

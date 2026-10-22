@@ -3,6 +3,8 @@
 use App\Http\Controllers\GuardianHealthController;
 use App\Http\Controllers\Intelligence\LoopController;
 use App\Http\Controllers\Ops\OpsIncidentController;
+use App\Http\Controllers\Participation\ParticipationController;
+use App\Http\Middleware\VerifyParticipationSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,3 +37,13 @@ Route::middleware('auth:sanctum')->prefix('ops')->group(function () {
 // the guardian's existing Sanctum service token (the same bearer the
 // incident archive and recall use), so no second secret exists.
 Route::middleware('auth:sanctum')->get('/guardian/health', GuardianHealthController::class)->name('guardian.health');
+
+// Opt-in participation signals (R-9): person-level topic + count, only for people who said yes,
+// keyed by InfoDot's user UUID. Server-to-server and HMAC-signed (the Dot.Dopemine scheme), NOT
+// Sanctum: the intelligence API above is untouched. See docs/participation-api.md.
+Route::middleware(VerifyParticipationSignature::class)->prefix('participation')->group(function () {
+    Route::post('/events', [ParticipationController::class, 'storeEvents']);
+    Route::put('/{userUuid}/consent', [ParticipationController::class, 'setConsent']);
+    Route::get('/{userUuid}/context', [ParticipationController::class, 'context']);
+    Route::delete('/{userUuid}', [ParticipationController::class, 'erase']);
+});

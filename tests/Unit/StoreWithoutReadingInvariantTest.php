@@ -2,8 +2,10 @@
 
 namespace Tests\Unit;
 
+use App\Http\Controllers\Participation\ParticipationController;
 use App\Models\DurabilityOutcome;
 use App\Models\Index;
+use App\Models\ParticipationConsent;
 use App\Models\RetrievalClass;
 use App\Models\RetrievalObservation;
 use App\Models\RetrievalSlaEscalation;
@@ -71,6 +73,26 @@ class StoreWithoutReadingInvariantTest extends TestCase
     public function test_retrieval_sla_escalation_has_no_content_holding_field(): void
     {
         $this->assertModelFieldsAreTelemetryOnly(new RetrievalSlaEscalation);
+    }
+
+    public function test_participation_consent_has_no_content_holding_field(): void
+    {
+        $this->assertModelFieldsAreTelemetryOnly(new ParticipationConsent);
+    }
+
+    /**
+     * Participation (R-9) is the one person-level carve-out, and it rides on loop_records, whose
+     * encrypted detail column could hold anything. The ingestion path must therefore only ever write the
+     * opaque contribution_ref there: this fails if the event contract grows a field.
+     */
+    public function test_participation_events_accept_only_opaque_references_and_a_slug(): void
+    {
+        $fields = (new \ReflectionClassConstant(ParticipationController::class, 'EVENT_FIELDS'))->getValue();
+
+        $this->assertSame(['event_id', 'user_uuid', 'occurred_at', 'topic', 'kind', 'contribution_ref'], $fields);
+        $this->assertMatchesRegularExpression(config('participation.topic_pattern'), 'laravel-queues');
+        $this->assertDoesNotMatchRegularExpression(config('participation.topic_pattern'), 'free text with spaces');
+        $this->assertDoesNotMatchRegularExpression(config('participation.reference_pattern'), 'someone@example.com');
     }
 
     private function assertModelFieldsAreTelemetryOnly(object $model): void

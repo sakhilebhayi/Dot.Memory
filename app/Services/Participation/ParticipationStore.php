@@ -99,8 +99,8 @@ class ParticipationStore
     }
 
     /**
-     * Hard-delete everything held about a person: every infodot person row for them (a superset of the
-     * participation rows) and their consent record. Idempotent.
+     * Hard-delete everything held about a person: every person-subject row for them, whatever platform wrote
+     * it (a superset of the participation rows), and their consent record. Idempotent.
      *
      * @return array{records_deleted: int, consent_deleted: bool}
      */
@@ -179,7 +179,6 @@ class ParticipationStore
     private function deleteAllFor(string $userUuid): int
     {
         return LoopRecord::query()
-            ->where('platform', self::PLATFORM)
             ->where('subject_type', self::SUBJECT_TYPE)
             ->where('subject_id', $userUuid)
             ->delete();

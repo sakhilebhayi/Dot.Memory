@@ -6,6 +6,7 @@ use App\Models\OpsIncident;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -212,5 +213,27 @@ class OpsIncidentApiTest extends TestCase
 
         $this->assertIsString($raw);
         $this->assertStringNotContainsString('plainly-readable-secret-detail', $raw);
+    }
+
+    /**
+     * Records the access model the external scanner's IDOR findings (OpsIncidentController, the uid lookups in
+     * store/update) were checked against: incident archives are ecosystem-wide data-plane records with no
+     * owning team or user, so there is no other tenant's incident to reach. Access is "holds a valid
+     * Sanctum token", the same for every holder. If incidents ever gain an owner, this test must change
+     * together with an ownership check.
+     */
+    public function test_incidents_are_ecosystem_wide_and_have_no_owning_team_or_user(): void
+    {
+        $columns = Schema::getColumnListing('ops_incidents');
+
+        $this->assertSame([], array_intersect($columns, ['team_id', 'user_id', 'owner_id', 'tenant_id']));
+
+        OpsIncident::factory()->create(['incident_uid' => 'grd-2026-0100']);
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->getJson('/api/ops/incidents')->assertOk()->assertJsonPath('data.0.incident_uid', 'grd-2026-0100');
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->getJson('/api/ops/incidents')->assertOk()->assertJsonPath('data.0.incident_uid', 'grd-2026-0100');
     }
 }

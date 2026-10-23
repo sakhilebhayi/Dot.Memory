@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\GuardianHealthController;
 use App\Http\Controllers\Intelligence\LoopController;
+use App\Http\Controllers\Knowledge\KnowledgeRecommendationController;
 use App\Http\Controllers\Ops\OpsIncidentController;
 use App\Http\Controllers\Participation\ParticipationController;
+use App\Http\Middleware\VerifyKnowledgeSignature;
 use App\Http\Middleware\VerifyParticipationSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,4 +48,17 @@ Route::middleware(VerifyParticipationSignature::class)->prefix('participation')-
     Route::put('/{userUuid}/consent', [ParticipationController::class, 'setConsent']);
     Route::get('/{userUuid}/context', [ParticipationController::class, 'context']);
     Route::delete('/{userUuid}', [ParticipationController::class, 'erase']);
+});
+
+// Knowledge recommendations (R-9 sections 5/6): Brain's `infodot-contribution` decisions for InfoDot's moderators,
+// the moderator outcome back, and the outcome feed Brain grades itself with. Signed like participation but with ONE
+// SECRET PER CONSUMER; the consumer decides what may be called (infodot: list + report; brain: the outcome feed).
+// Records are about contributions, never people. See docs/knowledge-recommendations-api.md.
+Route::middleware(['throttle:knowledge', VerifyKnowledgeSignature::class.':infodot'])->prefix('knowledge-recommendations')->group(function () {
+    Route::get('/', [KnowledgeRecommendationController::class, 'index']);
+    Route::post('/{decisionEventId}/outcome', [KnowledgeRecommendationController::class, 'storeOutcome']);
+});
+
+Route::middleware(['throttle:knowledge', VerifyKnowledgeSignature::class.':brain'])->prefix('knowledge-recommendations')->group(function () {
+    Route::get('/outcomes', [KnowledgeRecommendationController::class, 'outcomes']);
 });

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
  */
 class ParticipationSignature
 {
-    public static function valid(Request $request, string $secret): bool
+    public static function valid(Request $request, string $secret, ?int $tolerance = null): bool
     {
         $timestamp = (int) $request->header('X-InfoDot-Timestamp');
         $signature = (string) $request->header('X-InfoDot-Signature');
@@ -19,7 +19,7 @@ class ParticipationSignature
         // Always do the HMAC, even for an unconfigured platform, so a missing secret costs the same as a wrong signature.
         $key = $secret !== '' ? $secret : hash('sha256', 'memory-participation-unconfigured-platform');
         $expected = 'sha256='.hash_hmac('sha256', $timestamp.'.'.$request->getContent(), $key);
-        $fresh = $timestamp !== 0 && abs(now()->timestamp - $timestamp) <= (int) config('participation.tolerance', 300);
+        $fresh = $timestamp !== 0 && abs(now()->timestamp - $timestamp) <= $tolerance ?? (int) config('participation.tolerance', 300);
         $given = str_starts_with($signature, 'sha256=') ? $signature : 'sha256='.$signature;
 
         return hash_equals($expected, $given) && $fresh && $secret !== '';

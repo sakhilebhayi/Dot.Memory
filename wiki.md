@@ -1,6 +1,6 @@
 ---
 title: Dot.Memory — Platform Wiki
-version: 0.9.0
+version: 0.10.0
 status: draft
 owners: [Memory Platform Lead]
 platform-id: dot-memory
@@ -32,6 +32,8 @@ confirms it and the change log is updated accordingly.
 The one rule that shapes everything else here: **Dot.Memory the infrastructure stores knowledge without reading it; Dot.Memory the platform publishes only its own operational telemetry** (latency, durability, integrity — never content). A storage platform that mined its tenants' knowledge would be the ecosystem's deepest possible trust violation, so the telemetry plane and the data plane are architecturally separate, not just policy-separate.
 
 **Carve-out: opt-in participation signals (R-9, 0.9.0).** Memory may hold person-level expertise, and only under these terms: the person has opted in (default off, tracked in `participation_consents`); it is keyed by InfoDot's `user_uuid`; it holds **topic and count only** (a slug and a tally, never a title, question, answer, name or e-mail; the encrypted `detail` carries one opaque `contribution_ref`); a hard-purge endpoint and a retention limit exist and ship with it. There is no cross-person lookup ("who knows X") and no ranking. The generic Sanctum API refuses person-subject reads without consent, never returns participation rows and refuses person-subject writes (`LoopRecordAccess`). Memory is never the points ledger. Contract: [docs/participation-api.md](docs/participation-api.md).
+
+**Knowledge recommendations (R-9 §5/§6, 0.10.0).** Memory relays Dot.Brain's `infodot-contribution` decisions to InfoDot's moderators and records their outcome (adopted/declined) in the append-only `knowledge_outcomes` table; Brain reads the outcomes back to grade itself. The records are about contributions (opaque refs), never people; the moderator's opaque `actor_ref` is stored and never returned. HMAC-signed with one secret per consumer, so InfoDot and Brain have different permissions. Contract: [docs/knowledge-recommendations-api.md](docs/knowledge-recommendations-api.md).
 
 ## 3. Storage Tiers
 
@@ -117,6 +119,7 @@ We subscribe to Dot.Brain recommendations on index strategy, tier-policy tuning,
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| 0.10.0 | 2026-10-23 | Claude Sonnet 5.5 (AI) | **Knowledge recommendations API (R-9 §5/§6).** Signed `/api/knowledge-recommendations` endpoints with one HMAC secret per consumer (`infodot`: list + report outcome; `brain`: outcome feed). Append-only `knowledge_outcomes` (one additive migration). Reads Brain's `infodot-contribution` decisions only, through `LoopRecordAccess::readable()`; the consent gate and the participation rules are unchanged, and `LoopRecordAccessGuardTest` classifies the new routes. |
 | 0.9.1 | 2026-10-22 | Claude Sonnet 5.5 (AI) | **Consent gaps closed on the generic API.** `GET /api/intelligence/context` for a person subject needs current participation consent (403 `consent_required` otherwise); participation rows are never returned by it; person-subject and `participation:`-namespace writes through the Sanctum API are refused (403 `person_subject_reserved`). One class (`LoopRecordAccess`) decides it, with a guard test that classifies every route and class touching `loop_records`. Revoke and erase now purge every person-subject row for the UUID, any platform. Privacy policy §4/§4a rewritten to say exactly what is held, how it is withdrawn and expires, and that nightly backups (14 dated copies) can keep purged rows for up to 14 days. |
 | 0.9.0 | 2026-10-22 | Claude Sonnet 5.5 (AI) | **R-9 participation API.** Opt-in, person-level topic+count signals for InfoDot community rewards: consent store (default off), HMAC-signed `/api/participation/*` (Dopemine's scheme), hard-purge endpoint, daily `participation:prune` retention job. §2 and §6 state the carve-out precisely. Memory is not the points ledger; no cross-person lookup or ranking. The Sanctum `/api/intelligence/*` API is unchanged. |
 | 0.8.0 | 2026-10-16 | Integration pass for Dot.Central | **API tokens for integrators.** Jetstream's API feature is on: a person mints a personal token from Profile → API Tokens (`/user/api-tokens`, `ApiTokensTest`). `provision-service-token.yml` creates or rotates a service-account token for any service slug (user `<service>@service.dot`) the way the guardian's workflow does: the caller generates the plaintext locally and only its sha256 reaches the server. First consumer: Dot.Central's decisions/outcomes/incidents loop. |

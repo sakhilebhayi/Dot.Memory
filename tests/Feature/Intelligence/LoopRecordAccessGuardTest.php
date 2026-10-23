@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Intelligence;
 
+use App\Http\Middleware\VerifyKnowledgeSignature;
 use App\Http\Middleware\VerifyParticipationSignature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +23,9 @@ class LoopRecordAccessGuardTest extends TestCase
     /**
      * Every API route, classified. 'gated' routes go through LoopRecordAccess and are exercised below;
      * 'signed' routes are the participation API (HMAC, consent checked inside); 'none' routes never
-     * return loop_records rows.
+     * return loop_records rows. 'knowledge' routes are the signed knowledge-recommendations API: it reads decision
+     * rows only through KnowledgeRecommendations (LoopRecordAccess::readable(), one subject type) and never
+     * returns a detail blob.
      */
     private const ROUTES = [
         'GET api/user' => 'none',
@@ -40,6 +43,9 @@ class LoopRecordAccessGuardTest extends TestCase
         'PUT api/participation/{userUuid}/consent' => 'signed',
         'GET api/participation/{userUuid}/context' => 'signed',
         'DELETE api/participation/{userUuid}' => 'signed',
+        'GET api/knowledge-recommendations' => 'knowledge',
+        'POST api/knowledge-recommendations/{decisionEventId}/outcome' => 'knowledge',
+        'GET api/knowledge-recommendations/outcomes' => 'knowledge',
     ];
 
     /**
@@ -53,6 +59,7 @@ class LoopRecordAccessGuardTest extends TestCase
         'Http/Controllers/Participation/ParticipationController.php' => 'signed participation API',
         'Services/Participation/ParticipationStore.php' => 'signed participation API',
         'Services/Guardian/Checks/IntelligenceIngestCheck.php' => 'aggregate age and count only, no rows',
+        'Services/Knowledge/KnowledgeRecommendations.php' => 'signed knowledge API: must use LoopRecordAccess::readable()',
     ];
 
     public function test_every_api_route_is_classified(): void
@@ -88,6 +95,13 @@ class LoopRecordAccessGuardTest extends TestCase
 
             if ($class === 'signed') {
                 $this->assertContains(VerifyParticipationSignature::class, $route->gatherMiddleware(), $key);
+            }
+
+            if ($class === 'knowledge') {
+                $middleware = $route->gatherMiddleware();
+                $this->assertContains('throttle:knowledge', $middleware, $key);
+                $this->assertNotEmpty(array_filter($middleware, fn ($m) => is_string($m) && str_starts_with($m, VerifyKnowledgeSignature::class.':')), $key);
+                $this->assertNotContains('auth:sanctum', $middleware, $key);
             }
 
             if ($class === 'gated') {
@@ -132,6 +146,22 @@ class LoopRecordAccessGuardTest extends TestCase
         // The query that feeds the evidence pack is the only LoopRecord read in the builder, and it is filtered.
         $this->assertSame(1, substr_count($builder, 'LoopRecord::query()'));
         $this->assertMatchesRegularExpression('/readable\(LoopRecord::query\(\)\)/', $builder);
+    }
+
+    public function test_the_knowledge_service_reads_decisions_only_through_the_gate(): void
+    {
+        $service = (string) file_get_contents(app_path('Services/Knowledge/KnowledgeRecommendations.php'));
+
+        // The only LoopRecord query is the one wrapped by the gate, and it is narrowed to decisions of one subject type.
+        $this->assertSame(1, substr_count($service, 'LoopRecord::query()'));
+        $this->assertMatchesRegularExpression('/readable\(LoopRecord::query\(\)\)/', $service);
+        $this->assertStringContainsString("->where('stage', 'decision')", $service);
+        $this->assertStringContainsString("config('knowledge.subject_type')", $service);
+
+        // The controller and middleware never touch loop_records themselves.
+        foreach (['Http/Controllers/Knowledge/KnowledgeRecommendationController.php', 'Http/Middleware/VerifyKnowledgeSignature.php'] as $file) {
+            $this->assertDoesNotMatchRegularExpression('/\bLoopRecord\b|loop_records/', (string) file_get_contents(app_path($file)), $file);
+        }
     }
 
     public function test_every_gated_route_refuses_a_person_subject_without_consent(): void

@@ -3,7 +3,7 @@
 Opt-in, person-level expertise signals for InfoDot community rewards (requirement R-9, section 6). Dot.Memory may hold
 which topics a person has contributed to, and how many times, **only if that person opted in**. Memory is never the
 points ledger: Dot.Dopemine owns points. This API is separate from the Sanctum-authenticated `/api/intelligence/*`
-loop API, which is unchanged.
+loop API, which cannot read or write person data (see "The generic API and person subjects").
 
 ## Privacy model
 
@@ -13,8 +13,8 @@ loop API, which is unchanged.
 | Keyed by `user_uuid` only | InfoDot's user UUID. No name, e-mail, handle or team. `team_id`, `user_id` and `subject_label` stay null. |
 | Topic and count only | A row is `signature = expertise:<topic>` + `source = participation:<kind>`. The context read returns topic and counts and nothing else. |
 | No content | The encrypted `detail` holds the opaque `contribution_ref` only. Event bodies are validated against a closed field list; unknown fields (title, body, e-mail, ...) are rejected with 422, not dropped. Topic is a slug, refs are opaque ids (no spaces, no `@`). |
-| Revoke purges immediately | `PUT .../consent {granted:false}` deletes the person's rows in the same transaction as the consent change. |
-| Hard erase | `DELETE /api/participation/{user_uuid}` removes every infodot person row and the consent record. Nothing is soft-deleted. |
+| Revoke purges immediately | `PUT .../consent {granted:false}` deletes the person's rows (every person-subject row for that UUID) in the same transaction as the consent change. |
+| Hard erase | `DELETE /api/participation/{user_uuid}` removes every person-subject row for that UUID (any platform) and the consent record. Nothing is soft-deleted. |
 | Retention limit | `participation:prune` (daily 03:10) hard-deletes rows older than `PARTICIPATION_RETENTION_DAYS` (default 365, by `occurred_at`), rows of anyone without a current grant, and revoked-consent records older than the window. |
 | No ranking, no discovery | There is no endpoint that takes a topic and returns people, and none that orders people. A read always names exactly one person, and InfoDot calls it on that person's behalf. |
 
@@ -102,8 +102,23 @@ Hard-deletes the person's rows and consent record. Idempotent.
 Rows are ordinary `loop_records` (`platform=infodot`, `subject_type=person`, `subject_id=<user_uuid>`, stage
 `observation`, `event_id=participation:infodot:<event_id>` so it cannot collide with the Sanctum API's ids). Consent is
 `participation_consents`. The counting and pruning queries select participation rows by `source LIKE 'participation:%'`
-and `signature LIKE 'expertise:%'`; the erase endpoint is wider on purpose and removes every infodot person row for
-that UUID.
+and `signature LIKE 'expertise:%'`; revoke and erase are wider on purpose and remove every person-subject row for that UUID,
+whatever platform wrote it.
 
-The Sanctum intelligence API still answers `GET /api/intelligence/context?subject_type=person&subject_id=<uuid>` for
-any bearer-token holder, without a consent check. It is unchanged by this feature (see the pull request).
+The Sanctum intelligence API no longer answers for people without consent, and never returns participation rows: see
+the next section.
+
+## The generic API and person subjects
+
+`App\Services\Memory\LoopRecordAccess` is the single place that decides what the Sanctum `/api/intelligence/*` API
+may do with records about a person. The rule:
+
+| Request | Result |
+|---|---|
+| `GET /api/intelligence/context` with `subject_type=person` (any case or padding) and no current consent for `subject_id` | `403 {"code":"consent_required"}`, the same answer whether or not anything is held. |
+| The same with current consent | `200`, built only from person-subject rows that already exist from other platforms (new ones cannot be written; see below). Participation rows (`source` or `event_id` or `loop_id` starting `participation:`, and everything with `platform=infodot` and `subject_type=person`) are never included; they are readable only through `GET /api/participation/{user_uuid}/context`. |
+| Any other subject type | Exactly as before. |
+| `POST events\|decisions\|actions\|outcomes` for a person subject, or with a `participation:`-prefixed `source`, `event_id` or `loop_id`, or whose `event_id` addresses an existing person or participation row | `403 {"code":"person_subject_reserved"}`. Person records are written only through this participation API, which checks consent, validates a closed field list and applies retention. |
+
+The filter is applied in SQL to every read of `loop_records` (`LoopRecordAccess::readable()`), not after loading.
+`LoopRecordAccessGuardTest` fails if a new route or class touches `loop_records` without being classified.

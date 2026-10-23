@@ -1,4 +1,4 @@
-_Last updated: 7 August 2026_
+_Last updated: 22 October 2026_
 
 This Privacy Policy explains how **BluePin Inc** ("BluePin", "we", "us", "our"), the company responsible for Dot.Memory, collects, uses, stores, and shares personal information when you use Dot.Memory and the wider Dot Ecosystem it connects to. It is written to align with South Africa's **Protection of Personal Information Act 4 of 2013 ("POPIA")**.
 
@@ -8,10 +8,11 @@ Dot.Memory is infrastructure, not a typical application — it's the persistence
 
 BluePin Inc is the responsible party for the personal information described in this Policy. Our Information Officer can be reached at privacy@infodot.co.za for any question, request, or concern about your personal information.
 
-## 2. Two kinds of personal information Dot.Memory handles
+## 2. Three kinds of personal information Dot.Memory handles
 
 - **Your account information**, if you sign in to Dot.Memory to monitor storage tiers, indexes, or durability — here, BluePin is the **responsible party**, and this Policy governs how we handle it.
 - **Content stored by other Dot Ecosystem platforms.** Dot.Memory's core design principle is "store without reading": it holds the knowledge-graph data, vector indexes, and audit trails that other platforms write to it, but it doesn't model or read the content of what's stored — that content belongs to, and is the responsibility of, whichever platform published it. If your personal information appears in something stored on Dot.Memory, the platform that put it there is the responsible party for it, and BluePin acts only as an **operator**, storing it on that platform's instructions. If you have a question about specific content, contact the platform that generated it, not Dot.Memory directly.
+- **Participation records, only if you opted in.** If you choose to take part in community rewards on InfoDot, Dot.Memory can hold which topics you have contributed to and how many times. This exists only with your explicit opt-in and is described in §4a. If you have not opted in, Dot.Memory holds none of it.
 
 ## 3. What we collect (account holders)
 
@@ -23,11 +24,23 @@ BluePin Inc is the responsible party for the personal information described in t
 
 ## 4. Store without reading
 
-Dot.Memory the platform publishes only its own operational telemetry — latency, durability, integrity statistics — never the content it stores. This is an architectural separation, not just a policy: our own domain models (storage tiers, indexes, retrieval classes, retrieval observations, durability outcomes) have no field for the content itself, and no way to associate it with an individual, a team, or a tenant. We can't read what other platforms store, and this Policy doesn't cover it — see §2.
+Dot.Memory the platform publishes only its own operational telemetry — latency, durability, integrity statistics — never the content it stores. This is an architectural separation, not just a policy: our own telemetry models (storage tiers, indexes, retrieval classes, retrieval observations, durability outcomes) have no field for the content itself, and no way to associate it with an individual, a team, or a tenant. We can't read what other platforms store, and this Policy doesn't cover it — see §2.
+
+The one exception is the participation records in §4a, which are about a named person and exist only because that person opted in.
+
+## 4a. Participation records (opt-in only)
+
+Person-level data exists in Dot.Memory only for people who have given explicit opt-in consent through InfoDot. Without that consent nothing is recorded, and nothing about you can be read back.
+
+- **What is held.** A record is the topic of a contribution (for example "laravel-queues"), the kind of contribution (accepted or verified), the date, and an opaque reference to the contribution. It does not contain the text of the contribution, your name, your email address or your team. The record is keyed to your InfoDot user identifier.
+- **What can be read.** Only your own topic-and-count summary, requested by InfoDot on your behalf. There is no way to list the people who know a topic and no ranking of people. The general operational API cannot read or write these records, and it refuses to answer about a person who has not opted in.
+- **Withdrawing consent.** You can withdraw at any time. Your participation records are deleted immediately, in the same step that records your withdrawal. If you ask InfoDot to erase your account data, the records and your consent entry are deleted as well.
+- **Expiry.** Participation records are deleted automatically once they are older than the retention period, which is 365 days unless we have configured otherwise, and a daily clean-up removes records belonging to anyone without a current opt-in.
+- **Backups.** Deleted records can survive for a limited time in the nightly database backups. We keep 14 dated copies, so a deleted record can remain in an older copy for up to 14 days. Copies of backups held off the server are governed by our backup policy and may be kept longer.
 
 ## 5. Retention and erasure
 
-We don't delete stored content outright; content that's no longer actively referenced loses "salience" over time — it moves from Hot to Warm to Cold storage rather than being erased, so the platform that published it can still retrieve it if needed, along with a full history of changes. Where South African or other applicable law requires erasure of specific personal information within stored content, our standing design intent is cryptographic shredding — destroying the encryption key rather than the record, which makes the content permanently unrecoverable without deleting the audit trail structure around it. As of this Policy's date, this mechanism is design intent, not yet implemented; requests for erasure of content stored by another platform should go to that platform, which can escalate to us.
+We don't delete stored content outright; content that's no longer actively referenced loses "salience" over time — it moves from Hot to Warm to Cold storage rather than being erased, so the platform that published it can still retrieve it if needed, along with a full history of changes. Where South African or other applicable law requires erasure of specific personal information within stored content, our standing design intent is cryptographic shredding — destroying the encryption key rather than the record, which makes the content permanently unrecoverable without deleting the audit trail structure around it. As of this Policy's date, this mechanism is design intent, not yet implemented; requests for erasure of content stored by another platform should go to that platform, which can escalate to us. Participation records (§4a) are the exception: they are hard-deleted when you withdraw consent, when you are erased, and when they pass the retention period.
 
 ## 6. Why we process your information
 
@@ -44,7 +57,7 @@ When you use another Dot Ecosystem platform to sign in to Dot.Memory (or vice ve
 
 ## 8. How long we keep your information
 
-We keep your account and team information for as long as your account is active. If you delete your account, this data is removed, except where we're required by law to retain certain records for longer. Content stored on behalf of other platforms follows the retention behaviour described in §5, governed by the publishing platform's own policy.
+We keep your account and team information for as long as your account is active. If you delete your account, this data is removed, except where we're required by law to retain certain records for longer. Content stored on behalf of other platforms follows the retention behaviour described in §5, governed by the publishing platform's own policy. Participation records follow §4a: kept only while you are opted in and for at most the retention period.
 
 ## 9. Security
 

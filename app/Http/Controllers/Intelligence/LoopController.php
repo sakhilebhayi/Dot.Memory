@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Intelligence;
 use App\Http\Controllers\Controller;
 use App\Models\LoopRecord;
 use App\Services\Memory\LoopContextBuilder;
+use App\Services\Memory\LoopRecordAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,6 +21,8 @@ use Illuminate\Http\Request;
  */
 class LoopController extends Controller
 {
+    public function __construct(private readonly LoopRecordAccess $access) {}
+
     /**
      * Record one observation: something happened, worth remembering.
      */
@@ -87,6 +90,8 @@ class LoopController extends Controller
             'platform' => 'nullable|string|max:255',
         ]);
 
+        $this->access->assertReadable($validated['subject_type'], $validated['subject_id']);
+
         return response()->json(['data' => $builder->build(
             $validated['subject_type'],
             $validated['subject_id'],
@@ -116,6 +121,9 @@ class LoopController extends Controller
         ]);
 
         $existing = LoopRecord::query()->where('event_id', $validated['event_id'])->first();
+
+        // Person data and the participation namespace belong to the participation API alone.
+        $this->access->assertWritable($validated, $existing);
 
         // Idempotent on event_id: a replayed message must not inflate the
         // history the system grades itself against.

@@ -16,12 +16,14 @@ use Illuminate\Support\Collection;
  */
 class LoopContextBuilder
 {
+    public function __construct(private readonly LoopRecordAccess $access) {}
+
     /**
      * @return array<string, mixed>
      */
     public function build(string $subjectType, string $subjectId, ?string $signature = null, ?string $platform = null): array
     {
-        $records = LoopRecord::query()
+        $records = $this->access->readable(LoopRecord::query())
             ->where('subject_type', $subjectType)
             ->where('subject_id', $subjectId)
             ->when($platform !== null, fn ($query) => $query->where('platform', $platform))

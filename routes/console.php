@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\BackupSqliteDatabase;
+use App\Console\Commands\PruneParticipation;
 use App\Console\Commands\ScanSlaBreaches;
 use App\Http\Controllers\SchedulerProbeController;
 use Illuminate\Foundation\Inspiring;
@@ -32,3 +33,7 @@ Schedule::call(fn () => Cache::forever(SchedulerProbeController::SCHEDULER_KEY, 
 // share one host, so each one backs up at its own minute. No-op on other
 // database drivers. See docs/superpowers or the deploy README for restore.
 Schedule::command(BackupSqliteDatabase::class)->dailyAt('02:20')->onOneServer();
+
+// Retention and consent sweep for opt-in participation records (R-9): hard-deletes rows past the
+// retention window and rows of anyone without a current grant. Idempotent; prints counts only.
+Schedule::command(PruneParticipation::class)->dailyAt('03:10')->withoutOverlapping()->onOneServer();

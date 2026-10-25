@@ -9,10 +9,16 @@ use App\Models\Index;
 use App\Models\RetrievalClass;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
 
-Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
+Route::post('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
+    ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
     ->name('ecosystem.auth');
+
+// Links minted before the token moved into a POST body carried it in the URL. They are no longer honoured:
+// the visitor is sent to the normal sign-in page and the token in the URL is never read.
+Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'legacy']);
 
 // Public liveness probe (no auth, no secrets): answers 503 once the cron
 // scheduler has not been heard from. Watched from GitHub by
@@ -68,3 +74,9 @@ Route::middleware([
     Route::get('/indexes', [IndexController::class, 'index'])->name('indexes.index');
     Route::get('/durability', [DurabilityController::class, 'index'])->name('durability.index');
 });
+
+// Public sign-up is closed (accounts are created by InfoDot at first sign-in). Keep the named route so any link or
+// invitation email that points at it lands on the login page instead of failing.
+if (! Features::enabled(Features::registration())) {
+    Route::redirect('/register', '/login')->name('register');
+}

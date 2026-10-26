@@ -15,7 +15,7 @@
                     </div>
                     @if ($acknowledgingEscalationId === $escalation->id)
                         <div style="margin-top:0.5rem;">
-                            <textarea wire:model="resolutionDetail" class="dot-input" rows="2" placeholder="What did you do about it? (required)"></textarea>
+                            <textarea aria-label="What did you do about it?" wire:model="resolutionDetail" class="dot-input" rows="2" placeholder="What did you do about it? (required)"></textarea>
                             @error('resolutionDetail') <div style="color:var(--bad);font-size:10px;margin-top:4px;">{{ $message }}</div> @enderror
                             <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
                                 <button wire:click="confirmAcknowledge" class="dot-btn dot-btn-primary" style="font-size:10.5px;padding:5px 9px;">Confirm acknowledge</button>
@@ -76,21 +76,21 @@
                 @if ($recordingClassId === $class->id)
                     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--rule);">
                         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
-                            <input type="datetime-local" wire:model="observationWindowStart" class="dot-input" style="font-size:11px;">
-                            <input type="datetime-local" wire:model="observationWindowEnd" class="dot-input" style="font-size:11px;">
+                            <input aria-label="Observationwindowstart" type="datetime-local" wire:model="observationWindowStart" class="dot-input" style="font-size:11px;">
+                            <input aria-label="Observationwindowend" type="datetime-local" wire:model="observationWindowEnd" class="dot-input" style="font-size:11px;">
                         </div>
                         @error('observationWindowStart') <div style="color:var(--bad);font-size:10px;">{{ $message }}</div> @enderror
                         @error('observationWindowEnd') <div style="color:var(--bad);font-size:10px;">{{ $message }}</div> @enderror
                         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
-                            <input type="number" wire:model="observationRequestCount" placeholder="Requests" class="dot-input" style="width:90px;font-size:11px;">
-                            <input type="number" wire:model="observationFailureCount" placeholder="Failures" class="dot-input" style="width:90px;font-size:11px;">
+                            <input aria-label="Requests" type="number" wire:model="observationRequestCount" placeholder="Requests" class="dot-input" style="width:90px;font-size:11px;">
+                            <input aria-label="Failures" type="number" wire:model="observationFailureCount" placeholder="Failures" class="dot-input" style="width:90px;font-size:11px;">
                         </div>
                         @error('observationRequestCount') <div style="color:var(--bad);font-size:10px;">{{ $message }}</div> @enderror
                         @error('observationFailureCount') <div style="color:var(--bad);font-size:10px;">{{ $message }}</div> @enderror
                         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
-                            <input type="number" wire:model="observationP50" placeholder="p50 ms" class="dot-input" style="width:80px;font-size:11px;">
-                            <input type="number" wire:model="observationP95" placeholder="p95 ms" class="dot-input" style="width:80px;font-size:11px;">
-                            <input type="number" wire:model="observationP99" placeholder="p99 ms" class="dot-input" style="width:80px;font-size:11px;">
+                            <input aria-label="p50 ms" type="number" wire:model="observationP50" placeholder="p50 ms" class="dot-input" style="width:80px;font-size:11px;">
+                            <input aria-label="p95 ms" type="number" wire:model="observationP95" placeholder="p95 ms" class="dot-input" style="width:80px;font-size:11px;">
+                            <input aria-label="p99 ms" type="number" wire:model="observationP99" placeholder="p99 ms" class="dot-input" style="width:80px;font-size:11px;">
                         </div>
                         @error('observationP95') <div style="color:var(--bad);font-size:10px;">{{ $message }}</div> @enderror
                         <div style="display:flex;gap:0.5rem;">
